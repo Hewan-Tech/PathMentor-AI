@@ -23,12 +23,22 @@ const userSchema=new mongoose.Schema(
             enum: ["student", "mentor", "admin"], 
             
         }, 
+        isVerified: {
+            type: Boolean,
+            default: false
+        }, 
+        verificationToken: {
+            type: String
+        },
+        skill:{
+           type:String
+        },
         level: {
             type: String,
             enum: ["beginner", "intermediate", "advanced"], 
             default: "beginner"
         },
-
+        
         documents: [
             {
                 type: String,
