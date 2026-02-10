@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-
+import api from "@/services/api";
 import { PersonaType } from "@/lib/registrationTypes";
 import { ParticlesBackground } from "@/components/landing/ParticlesBackground";
 import { DashboardTopNav } from "@/components/dashboard/DashboardTopNav";
@@ -43,82 +43,92 @@ interface RecommendedLesson {
 
 const Dashboard = () => {
   const navigate = useNavigate();
-//const { user, signOut, isLoading } = useAuth();
+
+  const [user, setUser] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // MongoDB data (future use)
   const [preferences, setPreferences] = useState<UserPreferences | null>(null);
   const [lessons, setLessons] = useState<RecommendedLesson[]>([]);
-  const [loadingData, setLoadingData] = useState(true);
+  const [loadingData, setLoadingData] = useState(false); // ✅ FIXED
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
-  // useEffect(() => {
-  //   if (!isLoading && !user) {
-  //     navigate("/auth");
-  //   }
-  // }, [user, isLoading, navigate]);
+  // 🔐 Fetch user from Express (JWT)
+  useEffect(() => {
+    const token = localStorage.getItem("token");
 
-  // useEffect(() => {
-  //   const fetchUserData = async () => {
-  //     if (!user) return;
-  //     try {
-  //       const { data: prefsData } = await supabase
-  //         .from("user_preferences")
-  //         .select("*")
-  //         .eq("user_id", user.id)
-  //         .maybeSingle();
+    if (!token) {
+      navigate("/auth");
+      return;
+    }
 
-  //       if (prefsData) setPreferences(prefsData as UserPreferences);
+    const fetchUser = async () => {
+      try {
+        const res = await api.get("/users/profile");
+        setUser(res.data.user);
+      } catch (error) {
+        localStorage.removeItem("token");
+        navigate("/auth");
+      } finally {
+        setIsLoading(false);
+        setLoadingData(false);
+      }
+    };
 
-  //       const { data: lessonsData } = await supabase
-  //         .from("recommended_lessons")
-  //         .select("*")
-  //         .eq("user_id", user.id)
-  //         .order("match_score", { ascending: false })
-  //         .limit(5);
+    fetchUser();
+  }, [navigate]);
 
-  //       if (lessonsData) setLessons(lessonsData as RecommendedLesson[]);
-  //     } catch (error) {
-  //       console.error("Error fetching user data:", error);
-  //     } finally {
-  //       setLoadingData(false);
-  //     }
-  //   };
-  //   fetchUserData();
-  // }, [user]);
+  // 🚪 Logout
+  const handleSignOut = () => {
+    localStorage.removeItem("token");
+    navigate("/auth");
+  };
 
-  // const handleSignOut = async () => {
-  //   await signOut();
-  //   navigate("/");
-  // };
+  // ⏳ Loading state
+  if (isLoading || loadingData) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <motion.div
+          className="w-16 h-16 rounded-full bg-gradient-primary"
+          animate={{ rotate: 360, scale: [1, 1.1, 1] }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+        />
+      </div>
+    );
+  }
 
-  // if (isLoading || loadingData) {
-  //   return (
-  //     <div className="min-h-screen flex items-center justify-center">
-  //       <motion.div
-  //         className="w-16 h-16 rounded-full bg-gradient-primary"
-  //         animate={{ rotate: 360, scale: [1, 1.1, 1] }}
-  //         transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-  //       />
-  //     </div>
-  //   );
-  // }
+  // 👤 User info from MongoDB
+  const userName =
+    user?.name ||
+    user?.username ||
+    user?.email?.split("@")[0] ||
+    "Learner";
 
-  //const userName = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Learner";
-  //const userEmail = user?.email || "";
-  const completedLessons = lessons.filter((l) => l.is_completed).length;
-  const inProgressLessons = lessons.filter((l) => !l.is_completed).length;
-  const currentStageNum = preferences?.starting_stage?.includes("Beginner") ? 1 : preferences?.starting_stage?.includes("Basic") ? 2 : 3;
+  const userEmail = user?.email || "";
+
+  const completedLessons = lessons.filter(l => l.is_completed).length;
+  const inProgressLessons = lessons.filter(l => !l.is_completed).length;
+
+  const currentStageNum =
+    preferences?.starting_stage?.includes("Beginner")
+      ? 1
+      : preferences?.starting_stage?.includes("Basic")
+      ? 2
+      : 3;
 
   return (
     <div className="min-h-screen relative bg-background">
       <ParticlesBackground />
 
       {/* Top Navigation */}
-      {/* <DashboardTopNav
+      <DashboardTopNav
         userName={userName}
         userEmail={userEmail}
         onSignOut={handleSignOut}
         onMenuToggle={() => setSidebarOpen(!sidebarOpen)}
-      /> */}
+      />
 
       {/* Sidebar */}
       <DashboardSidebar
@@ -135,17 +145,31 @@ const Dashboard = () => {
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 md:px-6">
-          {/* Welcome Section */}
-          <WelcomeSection userName="mr.x" personaType={preferences?.persona_type} />
+          <WelcomeSection
+            userName={userName}
+            personaType={preferences?.persona_type}
+          />
 
-          {/* No preferences - prompt to complete profile */}
+          {/* No preferences yet */}
           {!preferences && (
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-8"
+            >
               <GlassCard variant="elevated" className="p-8 text-center">
                 <Sparkles className="w-12 h-12 text-primary mx-auto mb-4" />
-                <h2 className="text-xl font-semibold mb-2">Complete Your Profile</h2>
-                <p className="text-muted-foreground mb-6">Take a quick quiz to personalize your learning experience</p>
-                <GlassButton variant="primary" glow onClick={() => navigate("/register")}>
+                <h2 className="text-xl font-semibold mb-2">
+                  Complete Your Profile
+                </h2>
+                <p className="text-muted-foreground mb-6">
+                  Take a quick quiz to personalize your learning experience
+                </p>
+                <GlassButton
+                  variant="primary"
+                  glow
+                  onClick={() => navigate("/register")}
+                >
                   Start Personalization <ArrowRight className="w-5 h-5" />
                 </GlassButton>
               </GlassCard>
@@ -154,7 +178,6 @@ const Dashboard = () => {
 
           {preferences && (
             <>
-              {/* Stats Grid */}
               <StatsGrid
                 inProgress={inProgressLessons}
                 completed={completedLessons}
@@ -162,15 +185,19 @@ const Dashboard = () => {
                 learningStyle={preferences.content_priority || "Mixed"}
               />
 
-              {/* Progress Hero */}
               <ProgressHeroCard
                 stage={preferences.starting_stage || "Getting Started"}
-                progressPercent={completedLessons > 0 ? Math.round((completedLessons / lessons.length) * 100) : 15}
+                progressPercent={
+                  completedLessons > 0
+                    ? Math.round(
+                        (completedLessons / lessons.length) * 100
+                      )
+                    : 15
+                }
                 totalLessons={lessons.length || 10}
                 completedLessons={completedLessons}
               />
 
-              {/* Continue Learning */}
               {lessons.length > 0 && (
                 <ContinueLearningCard
                   lessonTitle={lessons[0].lesson_title}
@@ -181,33 +208,27 @@ const Dashboard = () => {
                 />
               )}
 
-              {/* Two Column Layout */}
               <div className="grid lg:grid-cols-2 gap-8">
-                {/* Today's Plan */}
-                <TodaysLearningPlan commitmentTime={preferences.commitment_time || "1 hour"} tasks={[]} />
-
-                {/* Roadmap Snapshot */}
+                <TodaysLearningPlan
+                  commitmentTime={preferences.commitment_time || "1 hour"}
+                  tasks={[]}
+                />
                 <RoadmapSnapshot currentStage={currentStageNum} />
               </div>
 
-              {/* AI Recommendations */}
               <AIRecommendations
                 recommendations={[]}
                 learningGoal={preferences.learning_goal}
                 learningStyle={preferences.learning_style}
               />
 
-              {/* Analytics Chart */}
               <SkillGrowthChart />
             </>
           )}
         </div>
       </main>
 
-      {/* Mobile Bottom Nav */}
       <MobileBottomNav />
-
-      {/* AI Mentor Orb */}
       <AIMentorOrb />
     </div>
   );
