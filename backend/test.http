@@ -1,0 +1,23 @@
+POST http://localhost:5000/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "Hewan Abebe",
+  "email": "hewan19@test.com",
+  "password": "Admin!1234",
+  "role": "admin"
+}
+###Login
+POST http://localhost:5000/api/auth/login
+Content-Type: application/json 
+
+{
+  "email": "yadu@test.com",
+  "password":"yadu2211"
+}
+
+### Get Profile (Protected)
+GET http://localhost:5000/api/users/profile
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5ODlhMjBmOGM0ODEwZDdiNTE1N2IzZiIsInJvbGUiOiJtZW50b3IiLCJpYXQiOjE3NzA2Njg4NDEsImV4cCI6MTc3MTI3MzY0MX0._K9CfSApuRDzjys6-vq2zGno6IYbroGGsI2ACk1IHlI
+###Get
+GET http://localhost:5000/api/users/profile
