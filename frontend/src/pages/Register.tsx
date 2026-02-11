@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { ParticlesBackground } from "@/components/landing/ParticlesBackground";
 import { ProgressBar } from "@/components/registration/ProgressBar";
 import { StepContainer } from "@/components/registration/StepContainer";
-
+import axios from "axios";
 import { SkillTrackStep } from "@/components/registration/SkillTrackStep";
 import { ExperienceLevelStep } from "@/components/registration/ExperienceLevelStep";
 import { CommitmentTimeStep } from "@/components/registration/CommitmentTimeStep";
@@ -17,7 +17,7 @@ import { PersonaRevealStep } from "@/components/registration/PersonaRevealStep";
 import { NavigationButtons } from "@/components/registration/NavigationButtons";
 import { useRegistration } from "@/hooks/useRegistration";
 import { useToast } from "@/hooks/use-toast";
-
+import api from "@/services/api";
 const Register = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -45,33 +45,52 @@ const Register = () => {
     setIsSaving(true);
 
     try {
-      // Demo version (Later connect to backend)
-      localStorage.setItem(
-        "registrationData",
-        JSON.stringify({
-          data,
-          learningProfile,
-        })
-      );
+      const token = localStorage.getItem("token");
 
+    if (!token) {
       toast({
-        title: "Success 🎉",
-        description: "Registration completed successfully!",
-      });
-
-     // navigate("/dashboard");
-    } catch (error) {
-      console.error(error);
-
-      toast({
-        title: "Error",
-        description: "Something went wrong!",
+        title: "Unauthorized",
+        description: "Please login again.",
         variant: "destructive",
       });
-    } finally {
-      setIsSaving(false);
+      return;
     }
-  };
+  console.log("Sending to backend:", learningProfile);
+
+   await axios.post(
+  "http://localhost:5000/api/users/onboarding",
+  {
+    ...data,             // user answers
+    ...learningProfile   // persona result
+  },
+  {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  }
+);
+
+
+    toast({
+      title: "Success 🎉",
+      description: "Profile completed successfully!",
+    });
+
+    navigate("/dashboard");
+
+  } catch (error) {
+    console.error(error);
+
+    toast({
+      title: "Error",
+      description:
+        error.response?.data?.message || "Something went wrong!",
+      variant: "destructive",
+    });
+  } finally {
+    setIsSaving(false);
+  }
+};
 
   /* =============================
       STEP CONTENT
