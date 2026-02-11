@@ -56,29 +56,54 @@ const Dashboard = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // 🔐 Fetch user from Express (JWT)
-  useEffect(() => {
-    const token = localStorage.getItem("token");
+ useEffect(() => {
+  const token = localStorage.getItem("token");
 
-    if (!token) {
-      navigate("/auth");
-      return;
-    }
+  if (!token) {
+    navigate("/auth");
+    return;
+  }
 
-    const fetchUser = async () => {
-      try {
-        const res = await api.get("/users/profile");
-        setUser(res.data.user);
-      } catch (error) {
-        localStorage.removeItem("token");
-        navigate("/auth");
-      } finally {
-        setIsLoading(false);
-        setLoadingData(false);
+  const fetchUser = async () => {
+    try {
+      const res = await api.get("/users/profile");
+      const userData = res.data.user;
+
+      setUser(userData);
+
+      // 🔥 Handle learningProfile from MongoDB
+      if (userData.learningProfile) {
+        setPreferences({
+          skill_track: userData.learningProfile.skillTrack,
+          experience_level: userData.learningProfile.experienceLevel,
+          persona_type: userData.learningProfile.persona,
+          starting_stage: userData.learningProfile.experienceLevel,
+          lesson_length: userData.learningProfile.commitmentTime,
+          content_priority: "Mixed",
+          project_recommendation: "",
+          commitment_time: userData.learningProfile.commitmentTime,
+          learning_goal: userData.learningProfile.learningGoal,
+          learning_style: userData.learningProfile.learningStyle,
+        });
       }
-    };
 
-    fetchUser();
-  }, [navigate]);
+      // 🔥 If you later create lessons in MongoDB
+      if (userData.recommendedLessons) {
+        setLessons(userData.recommendedLessons);
+      }
+
+    } catch (error) {
+      localStorage.removeItem("token");
+      navigate("/auth");
+    } finally {
+      setIsLoading(false);
+      setLoadingData(false);
+    }
+  };
+
+  fetchUser();
+}, [navigate]);
+
 
   // 🚪 Logout
   const handleSignOut = () => {
