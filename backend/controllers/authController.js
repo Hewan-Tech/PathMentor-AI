@@ -1,166 +1,148 @@
-const bcrypt=require("bcryptjs");
-const User=require("../models/User");
-const jwt= require("jsonwebtoken");
-const crypto = require("crypto");
-const nodemailer = require("nodemailer");
+const bcrypt = require("bcryptjs");
+const User = require("../models/User");
+const jwt = require("jsonwebtoken");
 
-const registerUser = async (req, res)=>{
+
+// ================= REGISTER =================
+const registerUser = async (req, res) => {
     try {
-        const {name, email, password, role }= req.body;
+        const { name, email, password, role } = req.body;
 
-        // check whether the user already register
-        const userExists = await User.findOne({email});
+        // Check if all required fields exist
+        if (!name || !email || !password || !role) {
+            return res.status(400).json({
+                message: "Please provide all required fields"
+            });
+        }
 
-        if(userExists) {
+        // Check if user already exists
+        const userExists = await User.findOne({ email });
+
+        if (userExists) {
             return res.status(400).json({
                 message: "User already exists"
             });
         }
-        // check whether password is valid
-       const passwordRegex =
-  /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%#*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
-if (!passwordRegex.test(password)) {
-  return res.status(400).json({
-    message:
-      "Use Strong Password"
-  });
-}
+        // Strong password validation
+        const passwordRegex =
+            /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%#*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
-        // hash password
-        const salt= await bcrypt.genSalt(10);
-        const hashed= await bcrypt.hash(password, salt);
-  // generate verification token 
-  const verificationToken = crypto.randomBytes(32).toString("hex");
-        // create user
-        const user= await User.create({
+        if (!passwordRegex.test(password)) {
+            return res.status(400).json({
+                message:
+                    "Password must be at least 8 characters, include one uppercase letter, one number and one special character"
+            });
+        }
+
+        // Hash password
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+
+        // Create user
+        const user = await User.create({
             name,
-            email,
-            password: hashed,
-            role,
-            verificationToken, 
-            isVerified: false
-        }); 
+            email: email.toLowerCase(),
+            password: hashedPassword,
+            role
+        });
 
-        // send verification email
-       const transporter = nodemailer.createTransport({
-            host: "smtp-relay.brevo.com",
-            port: 587,
-
-            auth: {
-                user: process.env.SMTP_USER,
-                pass: process.env.SMTP_PASS,
+        // Generate token
+        const token = jwt.sign(
+            {
+                id: user._id,
+                role: user.role
             },
-});
+            process.env.JWT_SECRET,
+            { expiresIn: "7d" }
+        );
 
-            const verifyLink = `http://localhost:5000/api/auth/verify/${verificationToken}`;
-
-    await transporter.sendMail({
-      from: '"PathMentor AI" ',
-      to: email,
-      subject: "Verify your email",
-      html: `
-        <h3>Hello ${name}</h3>
-        <p>Please verify your email by clicking the link below:</p>
-        <a href="${verifyLink}">Verify Account</a>
-      `
-    });
-
-            await user.save();
-        // send response 
+        // Send response
         res.status(201).json({
-            message: "User registerd sccessfully. Please check your email to verify! ",
-        
-           user: {
-              id: user._id,
-              name: user.name,
-              email: user.email,
-              role: user.role
-           }
-    });
-    } catch(error) {
-        console.log("error ", error )
+            message: "User registered successfully",
+            token,
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role
+            }
+        });
+
+    } catch (error) {
+        console.error("Register Error:", error);
         res.status(500).json({
-            message: "server error",
-             error: error.message
-        })
+            message: "Server error",
+            error: error.message
+        });
     }
-} 
-
-const verifyEmail = async (req, res) => {
-  try {
-    const { token } = req.params;
-
-    const user = await User.findOne({ verificationToken: token });
-
-    if (!user) {
-      return res.status(400).send("Invalid or expired verification link");
-    }
-
-    user.isVerified = true;
-    user.verificationToken = undefined;
-    await user.save();
-
-    // redirect to frontend login
-    res.redirect("http://localhost:8080/login");
-  } catch (error) {
-    console.error("Verify error:", error);
-    res.status(500).send("Server error", error);
-  }
 };
 
 
 
-// login
-const loginUser= async (req,res)=>{
-  try{
-    const {email, password} = req.body;
+// ================= LOGIN =================
+const loginUser = async (req, res) => {
+    try {
+        const { email, password } = req.body;
 
-    // find user
-    const user = await User.findOne({email});
-    if(!user){
-        return res.status(400).json({
-            message: "Check your email or password"
+        // Check if fields exist
+        if (!email || !password) {
+            return res.status(400).json({
+                message: "Please provide email and password"
+            });
+        }
+
+        // Check if user exists
+        const user = await User.findOne({ email: email.toLowerCase() });
+
+        if (!user) {
+            return res.status(400).json({
+                message: "Invalid email or password"
+            });
+        }
+
+        // Compare password
+        const isMatch = await bcrypt.compare(password, user.password);
+
+        if (!isMatch) {
+            return res.status(400).json({
+                message: "Invalid email or password"
+            });
+        }
+
+        // Generate token
+        const token = jwt.sign(
+            {
+                id: user._id,
+                role: user.role
+            },
+            process.env.JWT_SECRET,
+            { expiresIn: "7d" }
+        );
+
+        // Send response
+        res.status(200).json({
+            message: "Login successful",
+            token,
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role
+            }
+        });
+
+    } catch (error) {
+        console.error("Login Error:", error);
+        res.status(500).json({
+            message: "Server error",
+            error: error.message
         });
     }
-      // check if verified
-      if (!user.isVerified) {
-      return res.status(401).json({
-        message: "Please verify your email first"
-      });
-    }
-    // compare password
-    const isMatch = await bcrypt.compare(password, user.password);
-    if(!isMatch){
-        return res.status(400).json({
-            message: "Check your email or password"
-        })
-    }
+};
 
-    // generate token 
-    const token =jwt.sign(
-        {
-            id: user._id,
-            role: user.role
-        }, 
-        process.env.JWT_SECRET, 
-        {expiresIn:"7d"}
-    );
 
-    // response
-    res.json({
-        message:"Login Successful",
-        token,
-        user:{
-            id:user._id,
-            name: user.name,
-            role:user.role
-        }
-    });
-  } catch(error){
-    console.error("Error ", error)
-
-  }
-}
-
-module.exports= {registerUser, loginUser, verifyEmail};
+module.exports = {
+    registerUser,
+    loginUser
+};

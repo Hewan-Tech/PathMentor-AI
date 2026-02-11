@@ -3,33 +3,33 @@ Content-Type: application/json
 
 {
   "name": "Hewan",
-  "email": "homehewan@gmail.com",
+  "email": "hewanabebe24@gmail.com",
   "password": "Hewi@0099",
-  "role": "student"
+  "role": "admin"
 }
 ###Login
 POST http://localhost:5000/api/auth/login
 Content-Type: application/json 
 
 {
-  "email": "eden1@gmail.com",
-  "password":"NewPassword123!"
+  "email": "hewanabebe24@gmail.com",
+  "password":"Hewi@0099"
 }
 
 ### Get Profile (Protected)
 GET http://localhost:5000/api/users/profile
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5OGEzYTA0NWU4Yjk5ZTJlOWM2Yjk1NCIsInJvbGUiOiJzdHVkZW50IiwiaWF0IjoxNzcwNzQwOTkxLCJleHAiOjE3NzEzNDU3OTF9.x6SQlihYi8Ftn_DHS5suLraTF4mQSGQL4Xt2AqLY_xM
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5OGM0ZTg2MGUwY2U3NzIxYTNiNTdhNiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc3MDgwMjg2NSwiZXhwIjoxNzcxNDA3NjY1fQ.1nCJGj8RuFzGYCvBLJeTNh2arN7Y7n94IFzZai1-5-0
 ###Get
 GET http://localhost:5000/api/users/profile
 
 ###Put
 PUT http://localhost:5000/api/users/change-password
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5OGEzYTA0NWU4Yjk5ZTJlOWM2Yjk1NCIsInJvbGUiOiJzdHVkZW50IiwiaWF0IjoxNzcwNzQ4NjIzLCJleHAiOjE3NzEzNTM0MjN9.nJPHKQy5_liOoKorK2kqLMXFkz5coR-qm0fUC9DFBSg
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5OGM0ZTg2MGUwY2U3NzIxYTNiNTdhNiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc3MDgwMjg2NSwiZXhwIjoxNzcxNDA3NjY1fQ.1nCJGj8RuFzGYCvBLJeTNh2arN7Y7n94IFzZai1-5-0
 
 {
-  "currentPassword": "NewPassword123!",
-  "newPassword": "Edu!0909"
+  "currentPassword": "Hewi@0099",
+  "newPassword": "Admin!1234"
 }
 
 
