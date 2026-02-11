@@ -80,4 +80,52 @@ const changePassword = async (req, res) =>{
   }
 
 }
-module.exports= { getMyProfile, updateMyProfile, changePassword };
+
+// onboarding data 
+const completeProfile= async (req, res) =>{
+   try{
+    // get onboarding data from frontend
+    const {
+      skillTrack,
+      experienceLevel,
+      commitmentTime,
+      learningStyle,
+      learningGoal, 
+      personalGoal
+    } = req.body; 
+
+    // find user by user id
+    
+    const user = await User.findById(req.user._id);
+
+    if(!user){
+     return res.status(404).json({
+        message: "user not found"
+      });
+    };
+
+    // save to database
+    user.learningProfile = {
+      skillTrack,
+      experienceLevel,
+      commitmentTime,
+      learningStyle,
+      learningGoal,
+      personalGoal
+    }; 
+
+    user.onboardingCompleted = true;
+
+    await user.save();
+
+    // response
+    res.status(200).json({
+      message: "completed successsfully"
+    })
+     
+   } catch(error){
+    console.error("onboarding error: ", error);
+    res.status(500).json({message: "Server error"})
+   }
+}
+module.exports= { getMyProfile, updateMyProfile, changePassword, completeProfile };

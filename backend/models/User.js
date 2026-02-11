@@ -30,15 +30,21 @@ const userSchema=new mongoose.Schema(
         verificationToken: {
             type: String
         },
-        skill:{
-           type:String
-        },
-        level: {
-            type: String,
-            enum: ["beginner", "intermediate", "advanced"], 
-            default: "beginner"
-        },
-        
+        learningProfile: {
+            skillTrack: String,
+            experienceLevel: String,
+            commitmentTime: String,
+            learningStyle: String,
+            learningGoal: String,
+            personalGoal: String,
+            persona: String,
+            strengths: [String],
+            recommendation: String
+      },
+     onboardingCompleted: {
+             type: Boolean,
+            default: false
+     },
         documents: [
             {
                 type: String,
