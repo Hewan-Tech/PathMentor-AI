@@ -109,15 +109,18 @@ const Auth = () => {
         : "Welcome to PathMentor!",
     });
 
-    // Optional: role-based redirect
-    if (user.role === "mentor") {
-      navigate("/mentor/dashboard");
-    } else if(user.role==="admin"){
-      navigate("/admin/dashboard")
-    }
-    else {
-      navigate("/dashboard");
-    }
+  if (!user.onboardingCompleted && user.role === "student") {
+  navigate("/register");   // go to onboarding page
+} 
+else if (user.role === "mentor") {
+  navigate("/mentor/dashboard");
+} 
+else if (user.role === "admin") {
+  navigate("/admin/dashboard");
+} 
+else {
+  navigate("/dashboard");  // normal student dashboard
+}
 
   } catch (error: any) {
     toast({

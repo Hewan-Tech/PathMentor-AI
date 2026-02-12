@@ -45,6 +45,7 @@ const registerUser = async (req, res) => {
             email: email.toLowerCase(),
             password: hashedPassword,
             role
+            
         });
 
         // Generate token
@@ -65,7 +66,8 @@ const registerUser = async (req, res) => {
                 id: user._id,
                 name: user.name,
                 email: user.email,
-                role: user.role
+                role: user.role,
+                onboardingCompleted: user.onboardingCompleted
             }
         });
 
@@ -128,7 +130,8 @@ const loginUser = async (req, res) => {
                 id: user._id,
                 name: user.name,
                 email: user.email,
-                role: user.role
+                role: user.role,
+                 onboardingCompleted: user.onboardingCompleted
             }
         });
 
