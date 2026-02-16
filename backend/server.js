@@ -20,6 +20,7 @@ app.use(cors({
 app.use("/api/auth", authRoutes);
 app.use("/api/users", require("./routes/userRoutes"));
 app.use("/api/admin", require("./routes/adminRoutes"));
+app.use("/api/mentor", require("./routes/mentorRoutes"));
 
 app.listen(PORT, ()=>{
     console.log(`server is running on port ${PORT}`);

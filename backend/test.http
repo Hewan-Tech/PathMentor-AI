@@ -3,7 +3,7 @@ Content-Type: application/json
 
 {
   "name": "Hewan",
-  "email": "hewanabebe24@gmail.com",
+  "email": "hewanabebe2@gmail.com",
   "password": "Hewi@0099",
   "role": "admin"
 }
@@ -12,7 +12,7 @@ POST http://localhost:5000/api/auth/login
 Content-Type: application/json 
 
 {
-  "email": "hewanabebe24@gmail.com",
+  "email": "hewanabebe2@gmail.com",
   "password":"Hewi@0099"
 }
 
@@ -32,4 +32,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5OGM0ZTg2M
   "newPassword": "Admin!1234"
 }
 
-
+###
+PUT http://localhost:5000/api/admin/mentor/698e57a6b2f11e2243244a38/reject
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5OGU1N2E2YjJmMTFlMjI0MzI0NGEzOCIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc3MTA1NDA1NiwiZXhwIjoxNzcxNjU4ODU2fQ.ZRWhzres5gJcTMG-hUE3ESlr2jTFyrHW-Js2sggCCdY
+Content-Type: application/json
