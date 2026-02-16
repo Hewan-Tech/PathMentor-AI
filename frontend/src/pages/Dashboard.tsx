@@ -148,12 +148,13 @@ const Dashboard = () => {
       <ParticlesBackground />
 
       {/* Top Navigation */}
-      <DashboardTopNav 
-  userName="Super Admin" 
-  userEmail="admin@pathmentor.ai" // Add this to fix the error
-  onSignOut={() => {}} 
-  onMenuToggle={() => {}} 
-/>
+      <DashboardTopNav
+        userName={userName}
+        userEmail={userEmail}
+        onSignOut={handleSignOut}
+        onMenuToggle={() => setSidebarOpen(!sidebarOpen)}
+      />
+
       {/* Sidebar */}
       <DashboardSidebar
         isOpen={sidebarOpen}

@@ -31,4 +31,22 @@ router.post("/upload-documents", guard, upload.array("documents", 5),async(req, 
     }
 } ); 
 
+router.get(
+  "/dashboard",
+  guard,
+  authorize("mentor"),
+  async (req, res) => {
+    try {
+      const mentor = await User.findById(req.user.id);
+
+      res.json({
+        students: mentor.studentsAssigned,
+        pendingReviews: mentor.pendingReviews,
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Server error" });
+    }
+  }
+);
+
 module.exports= router;

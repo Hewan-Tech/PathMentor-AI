@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { NavLink, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
   Map,
@@ -16,19 +17,16 @@ interface DashboardSidebarProps {
   onClose: () => void;
   isCollapsed: boolean;
   onToggleCollapse: () => void;
-  // Added these props to control the parent state
-  activeTab: string;
-  setActiveTab: (tab: string) => void;
 }
 
 const navItems = [
-  { icon: LayoutDashboard, label: "Dashboard", id: "dashboard" },
-  { icon: Map, label: "Roadmap", id: "roadmap" },
-  { icon: BookOpen, label: "Lessons", id: "lessons" },
-  { icon: FolderKanban, label: "Projects", id: "projects" },
-  { icon: Bot, label: "AI Mentor", id: "ai-mentor" },
-  { icon: TrendingUp, label: "Progress", id: "progress" },
-  { icon: Settings, label: "Settings", id: "settings" },
+  { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
+  { icon: Map, label: "Roadmap", path: "/roadmap" },
+  { icon: BookOpen, label: "Lessons", path: "/lessons" },
+  { icon: FolderKanban, label: "Projects", path: "/projects" },
+  { icon: Bot, label: "AI Mentor", path: "/ai-mentor" },
+  { icon: TrendingUp, label: "Progress", path: "/progress" },
+  { icon: Settings, label: "Settings", path: "/settings" },
 ];
 
 export const DashboardSidebar = ({
@@ -36,9 +34,8 @@ export const DashboardSidebar = ({
   onClose,
   isCollapsed,
   onToggleCollapse,
-  activeTab,
-  setActiveTab,
 }: DashboardSidebarProps) => {
+  const location = useLocation();
 
   return (
     <>
@@ -68,7 +65,7 @@ export const DashboardSidebar = ({
         )}
       >
         <div className="flex flex-col h-full p-4">
-          {/* Collapse toggle */}
+          {/* Collapse toggle - desktop only */}
           <button
             onClick={onToggleCollapse}
             className="hidden lg:flex absolute -right-3 top-24 w-6 h-6 rounded-full bg-muted border border-border items-center justify-center hover:bg-muted/80 transition-colors"
@@ -84,16 +81,14 @@ export const DashboardSidebar = ({
           {/* Navigation */}
           <nav className="flex-1 space-y-2 mt-4">
             {navItems.map((item) => {
-              const isActive = activeTab === item.id;
+              const isActive = location.pathname === item.path;
               return (
-                <button
-                  key={item.id}
-                  onClick={() => {
-                    setActiveTab(item.id);
-                    if (window.innerWidth < 1024) onClose();
-                  }}
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  onClick={() => window.innerWidth < 1024 && onClose()}
                   className={cn(
-                    "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300",
+                    "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300",
                     "hover:bg-white/10",
                     isActive && "bg-primary/20 border border-primary/30",
                     isCollapsed && "justify-center px-3"
@@ -115,7 +110,7 @@ export const DashboardSidebar = ({
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       className={cn(
-                        "text-sm font-medium transition-colors text-left flex-1",
+                        "text-sm font-medium transition-colors",
                         isActive ? "text-foreground" : "text-muted-foreground"
                       )}
                     >
@@ -128,12 +123,12 @@ export const DashboardSidebar = ({
                       className="ml-auto w-1.5 h-1.5 rounded-full bg-primary"
                     />
                   )}
-                </button>
+                </NavLink>
               );
             })}
           </nav>
 
-          {/* AI Mentor Quick Access */}
+          {/* AI Mentor Quick Access - at bottom */}
           {!isCollapsed && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -151,10 +146,7 @@ export const DashboardSidebar = ({
                     <p className="text-xs text-muted-foreground">Ready to help</p>
                   </div>
                 </div>
-                <button 
-                  onClick={() => setActiveTab('ai-mentor')}
-                  className="w-full py-2 rounded-xl bg-white/10 hover:bg-white/15 text-sm font-medium transition-colors"
-                >
+                <button className="w-full py-2 rounded-xl bg-white/10 hover:bg-white/15 text-sm font-medium transition-colors">
                   Ask a question
                 </button>
               </div>
