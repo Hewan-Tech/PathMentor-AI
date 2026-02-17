@@ -109,18 +109,23 @@ const Auth = () => {
         : "Welcome to PathMentor!",
     });
 
-  if (!user.onboardingCompleted && user.role === "student") {
-  navigate("/register");   // go to onboarding page
-} 
-else if (user.role === "mentor") {
+// order matters
+if (user.role === "mentor" && user.mentorVerification?.status !== "approved") {
+  navigate("/mentor/pending-approval");
+}
+else if (!user.onboardingCompleted && user.role === "student") {
+  navigate("/register"); // onboarding
+}
+else if (user.role === "mentor" ) {
   navigate("/mentor/dashboard");
-} 
+}
 else if (user.role === "admin") {
   navigate("/admin/dashboard");
-} 
-else {
-  navigate("/dashboard");  // normal student dashboard
 }
+else {
+  navigate("/dashboard"); // student dashboard~
+}
+
 
   } catch (error: any) {
     toast({
