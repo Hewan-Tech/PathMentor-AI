@@ -1,9 +1,17 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "@/services/api";
-import { LayoutDashboard, Users, UserCheck } from "lucide-react";
+import {
+  LayoutDashboard,
+  Users,
+  UserCheck,
+  ClipboardList,
+  Settings,
+  LogOut,
+  Menu,
+} from "lucide-react";
 
-/* ================= MAIN DASHBOARD ================= */
+/* ================= MAIN ================= */
 
 const UnifiedDashboard = () => {
   const navigate = useNavigate();
@@ -12,9 +20,9 @@ const UnifiedDashboard = () => {
   const [stats, setStats] = useState<any>(null);
   const [pendingMentors, setPendingMentors] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   /* ================= LOAD USER ================= */
-
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
 
@@ -24,10 +32,9 @@ const UnifiedDashboard = () => {
     }
 
     setUser(JSON.parse(storedUser));
-  }, [navigate]);
+  }, []);
 
-  /* ================= FETCH DASHBOARD ================= */
-
+  /* ================= FETCH DATA ================= */
   useEffect(() => {
     if (!user) return;
 
@@ -46,7 +53,7 @@ const UnifiedDashboard = () => {
           setStats(res.data);
         }
       } catch (error) {
-        console.error(error);
+        console.log(error);
       } finally {
         setLoading(false);
       }
@@ -55,123 +62,176 @@ const UnifiedDashboard = () => {
     fetchData();
   }, [user]);
 
-  /* ================= APPROVE MENTOR ================= */
-
+  /* ================= ACTIONS ================= */
   const approveMentor = async (id: string) => {
     await api.put(`/admin/approve-mentor/${id}`);
-
     const pending = await api.get("/admin/pending-mentors");
     setPendingMentors(pending.data);
   };
 
-  /* ================= LOGOUT ================= */
-
   const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    localStorage.clear();
     navigate("/auth");
   };
 
   if (loading) {
-    return <div className="text-center mt-20 text-white">Loading...</div>;
+    return <div className="text-white text-center mt-20">Loading...</div>;
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white p-10">
-      <div className="flex justify-between mb-10">
-        <div>
-          <h1 className="text-3xl font-bold">
-            {user.role === "admin" ? "Admin Dashboard" : "Mentor Dashboard"}
+    <div className="flex min-h-screen bg-slate-950 text-white">
+      {/* ================= SIDEBAR ================= */}
+      <div
+        className={`bg-slate-900 p-4 transition-all ${
+          sidebarOpen ? "w-64" : "w-16"
+        }`}
+      >
+        <div className="flex justify-between items-center mb-6">
+          <h1 className={`${!sidebarOpen && "hidden"} font-bold text-lg`}>
+            Admin
           </h1>
-          <p className="text-gray-400">{user.email}</p>
+          <Menu
+            className="cursor-pointer"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+          />
         </div>
 
-        <button
-          onClick={logout}
-          className="bg-red-600 px-4 py-2 rounded-lg"
-        >
-          Logout
-        </button>
+        <nav className="flex flex-col gap-4 text-gray-300">
+          <NavItem icon={<LayoutDashboard />} label="Dashboard" open={sidebarOpen}/>
+          <NavItem
+            icon={<UserCheck />}
+            label="Mentors"
+            open={sidebarOpen}
+            onClick={() => navigate("/admin/mentors")}
+          />
+          <NavItem
+            icon={<Users />}
+            label="Students"
+            open={sidebarOpen}
+            onClick={() => navigate("/admin/students")}
+          />
+          <NavItem
+            icon={<ClipboardList />}
+            label="Assessments"
+            open={sidebarOpen}
+            onClick={() => navigate("/admin/assessments")}
+          />
+          <NavItem
+            icon={<Settings />}
+            label="Settings"
+            open={sidebarOpen}
+            onClick={() => navigate("/admin/settings")}
+          />
+        </nav>
       </div>
 
-      {user.role === "admin" && (
-        <>
-          <div className="grid grid-cols-3 gap-6 mb-10">
-            <StatCard
-              icon={<UserCheck />}
-              label="Verified Mentors"
-              value={stats?.verifiedMentors}
-            />
-            <StatCard
-              icon={<Users />}
-              label="Pending Mentors"
-              value={stats?.pendingMentors}
-            />
-            <StatCard
-              icon={<LayoutDashboard />}
-              label="Total Students"
-              value={stats?.totalStudents}
-            />
+      {/* ================= MAIN CONTENT ================= */}
+      <div className="flex-1 p-6">
+        {/* TOP BAR */}
+        <div className="flex justify-between items-center bg-slate-900 p-4 rounded-xl mb-6">
+          <h2 className="text-lg font-semibold">PathMentor AI</h2>
+
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-gray-300">{user.email}</span>
+            <button
+              onClick={logout}
+              className="bg-red-500 px-3 py-1 rounded-lg text-sm"
+            >
+              Logout
+            </button>
           </div>
-
-          <div className="bg-slate-800 p-6 rounded-xl">
-            <h2 className="text-xl font-bold mb-4">
-              Pending Mentor Approvals
-            </h2>
-
-            {pendingMentors.length === 0 && (
-              <p className="text-gray-400">No pending mentors</p>
-            )}
-
-            {pendingMentors.map((mentor) => (
-              <div
-                key={mentor._id}
-                className="flex justify-between items-center border-b py-3"
-              >
-                <div>
-                  <p className="font-semibold">{mentor.name}</p>
-                  <p className="text-sm text-gray-400">
-                    {mentor.email}
-                  </p>
-                </div>
-
-                <button
-                  onClick={() => approveMentor(mentor._id)}
-                  className="bg-green-600 px-4 py-1 rounded-lg text-sm"
-                >
-                  Approve
-                </button>
-              </div>
-            ))}
-          </div>
-        </>
-      )}
-
-      {user.role === "mentor" && (
-        <div className="grid grid-cols-2 gap-6">
-          <StatCard
-            icon={<Users />}
-            label="Assigned Students"
-            value={stats?.students}
-          />
-          <StatCard
-            icon={<LayoutDashboard />}
-            label="Pending Reviews"
-            value={stats?.pendingReviews}
-          />
         </div>
-      )}
+
+        {/* ================= ADMIN VIEW ================= */}
+        {user.role === "admin" && (
+          <>
+            {/* CARDS */}
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+              <Card title="Verified Mentors" value={stats?.verifiedMentors} />
+              <Card title="Total Students" value={stats?.totalStudents} />
+              <Card
+                title="Pending Mentors"
+                value={stats?.pendingMentors}
+                button="Review Applications"
+              />
+            </div>
+
+            {/* TABLE */}
+            <div className="bg-slate-900 p-6 rounded-xl">
+              <h3 className="mb-4 font-semibold">Pending Applications</h3>
+
+              <table className="w-full text-sm">
+                <thead className="text-gray-400 border-b border-slate-700">
+                  <tr>
+                    <th className="text-left py-2">Name</th>
+                    <th>Email</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {pendingMentors.map((m: any) => (
+                    <tr
+                      key={m._id}
+                      className="border-b border-slate-800"
+                    >
+                      <td className="py-3">{m.name}</td>
+                      <td>{m.email}</td>
+                      <td>{m.date || "2024-05-10"}</td>
+                      <td>
+                        <button
+                          onClick={() => approveMentor(m._id)}
+                          className="bg-green-500 px-2 py-1 rounded mr-2 text-xs"
+                        >
+                          Approve
+                        </button>
+                        <button className="bg-red-500 px-2 py-1 rounded text-xs">
+                          Reject
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
+
+        {/* ================= MENTOR VIEW ================= */}
+        {user.role === "mentor" && (
+          <div className="grid grid-cols-2 gap-6">
+            <Card title="Assigned Students" value={stats?.students} />
+            <Card title="Pending Reviews" value={stats?.pendingReviews} />
+          </div>
+        )}
+      </div>
     </div>
   );
 };
 
-/* ================= REUSABLE CARD ================= */
+/* ================= REUSABLE ================= */
 
-const StatCard = ({ icon, label, value }: any) => (
-  <div className="bg-slate-800 p-6 rounded-xl">
-    <div className="mb-3">{icon}</div>
-    <p className="text-sm text-gray-400">{label}</p>
-    <p className="text-2xl font-bold">{value}</p>
+const NavItem = ({ icon, label, open, onClick }: any) => (
+  <div
+    onClick={onClick}
+    className="flex items-center gap-3 cursor-pointer hover:text-white"
+  >
+    {icon}
+    {open && <span>{label}</span>}
+  </div>
+);
+
+const Card = ({ title, value, button }: any) => (
+  <div className="bg-gradient-to-br from-slate-800 to-slate-900 p-5 rounded-xl shadow">
+    <p className="text-gray-400 text-sm">{title}</p>
+    <h2 className="text-2xl font-bold mt-2">{value}</h2>
+
+    {button && (
+      <button className="mt-3 bg-red-500 text-xs px-3 py-1 rounded">
+        {button}
+      </button>
+    )}
   </div>
 );
 
