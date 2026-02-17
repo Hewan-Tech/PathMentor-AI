@@ -45,17 +45,23 @@ const userSchema=new mongoose.Schema(
              type: Boolean,
             default: false
      },
-        documents: [
-            {
-                type: String,
-            }
-        ],
-
-        verificationStatus: {
-            type: String,
+     // mentor verification
+     mentorVerification: {
+             status: {
+              type: String,
             enum: ["pending", "approved", "rejected"],
             default: "pending"
-        }
+             },
+             documents: [String], //file paths, /URL
+             reviewdBy: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "User"
+             },
+             reviewedAt: Date
+     }
+
+
+        
     }, 
     { timestamps: true}
 ); 

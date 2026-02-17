@@ -101,7 +101,7 @@ const Auth = () => {
 
     // Save JWT
     localStorage.setItem("token", token);
-
+    localStorage.setItem("user", JSON.stringify(user));
     toast({
       title: isLogin ? "Welcome back!" : "Account created!",
       description: isLogin

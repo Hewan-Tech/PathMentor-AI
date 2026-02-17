@@ -3,8 +3,8 @@ Content-Type: application/json
 
 {
   "name": "Hewan",
-  "email": "hewanabebe24@gmail.com",
-  "password": "Hewi@0099",
+  "email": "hewanadmin@gmail.com",
+  "password": "Admin!1234",
   "role": "admin"
 }
 ###Login
