@@ -27,22 +27,22 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 /**
- * FIXED: Mentor Guard Component
- * This ensures mentors don't get stuck in a loading loop.
- * If they are approved, they go to dashboard. If not, they stay at pending.
+ * MENTOR PROTECTED ROUTE
+ * Prevents "weird loading" loops by explicitly checking status before rendering.
  */
 const MentorGuard = ({ children }: { children: React.ReactNode }) => {
   const userStr = localStorage.getItem("user");
   const user = userStr ? JSON.parse(userStr) : null;
 
-  // If no user found, send to login
+  // 1. No user? Back to login.
   if (!user) return <Navigate to="/auth" replace />;
 
-  // If user is a mentor but not approved yet, redirect to pending
+  // 2. Not approved? Back to pending.
   if (user.status !== "approved") {
     return <Navigate to="/mentor/pending" replace />;
   }
 
+  // 3. Approved? Welcome to the dashboard.
   return <>{children}</>;
 };
 
@@ -64,8 +64,6 @@ const App = () => (
           
           {/* Mentor Routes */}
           <Route path="/mentor/pending" element={<MentorPendingApproval />} />
-          
-          {/* FIXED: Protected Mentor Dashboard */}
           <Route 
             path="/mentor/dashboard" 
             element={
