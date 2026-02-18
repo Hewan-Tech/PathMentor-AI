@@ -18,7 +18,6 @@ import MentorPendingApproval from "./pages/mentor/MentorPendingApproval";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminStudents from "./pages/admin/AdminStudents";
-import EditStudent from './pages/admin/EditStudent'; 
 import AdminMentors from "./pages/admin/AdminMentors";
 import AdminAssessments from "./pages/admin/AdminAssessments";
 
@@ -79,7 +78,6 @@ const App = () => (
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/students" element={<AdminStudents />} />
           <Route path="/admin/students/:id" element={<AdminStudents />} />
-          <Route path="/admin/students/edit/:id" element={<EditStudent />} />
           <Route path="/admin/mentors" element={<AdminMentors />} />
           <Route path="/admin/assessments" element={<AdminAssessments/>} />
           <Route path="/admin/settings" element={<AdminSettings/>} />

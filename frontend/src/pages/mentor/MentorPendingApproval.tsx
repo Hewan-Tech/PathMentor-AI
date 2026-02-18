@@ -44,7 +44,7 @@ const MentorPendingApproval = () => {
           
           // Small delay for dramatic effect/ux
           setTimeout(() => {
-            navigate("/mentor/dashboard");
+            navigate("/mentor/MentordDashboard");
           }, 1500);
         }
       }
