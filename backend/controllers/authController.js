@@ -31,7 +31,7 @@ const registerUser = async (req, res) => {
         if (!passwordRegex.test(password)) {
             return res.status(400).json({
                 message:
-                    "Password must be at least 8 characters, include one uppercase letter, one number and one special character"
+                    "Use Strong Password"
             });
         }
 
@@ -111,11 +111,17 @@ const loginUser = async (req, res) => {
                 message: "Invalid email or password"
             });
         }
-        if (user.role === "mentor" && !user.isApproved) {
-  return res.status(403).json({
-    message: "Your account is pending admin approval",
-  });
-}
+     if(user.role=== "mentor"){
+        const status= user.mentorVerification?.status;
+
+        if(status === "pending"){
+            return res.status(403).json({
+                message: "Your account is waiting for admin approval",
+            });
+        }
+
+      
+     }
 
 
         // Generate token
@@ -137,7 +143,10 @@ const loginUser = async (req, res) => {
                 name: user.name,
                 email: user.email,
                 role: user.role,
-                 onboardingCompleted: user.onboardingCompleted
+                 onboardingCompleted: user.onboardingCompleted,
+                 mentorVerification: {
+                    status: user.mentorVerification.status
+                 }
             }
         });
 
