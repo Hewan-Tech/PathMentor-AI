@@ -64,7 +64,7 @@ const UnifiedDashboard = () => {
 
   /* ================= ACTIONS ================= */
   const approveMentor = async (id: string) => {
-    await api.put(`/admin/approve-mentor/${id}`);
+    await api.put(`/admin/mentor/${id}/approve`);
     const pending = await api.get("/admin/pending-mentors");
     setPendingMentors(pending.data);
   };
