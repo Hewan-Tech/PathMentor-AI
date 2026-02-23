@@ -20,7 +20,7 @@ interface DashboardSidebarProps {
 }
 
 const navItems = [
-  { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
+  { icon: LayoutDashboard, label: "Dashboard" },
   { icon: Map, label: "Roadmap", path: "/roadmap" },
   { icon: BookOpen, label: "Lessons", path: "/lessons" },
   { icon: FolderKanban, label: "Projects", path: "/projects" },

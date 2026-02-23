@@ -15,25 +15,32 @@ import { toast } from "sonner";
 
 const MentorPendingApproval = () => {
   const navigate = useNavigate();
-  
-  // Local state to simulate status
   const [status, setStatus] = useState<'pending' | 'reviewing' | 'approved'>('pending');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // Keep this
 
   useEffect(() => {
-  
-    // THE "AUTO-LANDING" MAGIC (Frontend Only)
-    // This listens for changes in LocalStorage happening in OTHER tabs (Admin tab)
+    // 1. Check current status immediately on load
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      const user = JSON.parse(userStr);
+      if (user.status === "approved") {
+        navigate("/mentor/MentordDashboard");
+        return;
+      }
+      // If they are pending, update local state to match their actual status
+      if (user.status) setStatus(user.status);
+    }
+
+    // 2. STOP LOADING so the page actually shows
+    setLoading(false);
+
+    // 3. Keep your "Magic" storage listener for real-time updates from other tabs
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === "user") {
         const updatedUser = JSON.parse(e.newValue || "{}");
         if (updatedUser.status === "approved") {
           toast.success("Identity Verified. Accessing Nexus...");
-          
-          // Small delay for dramatic effect/ux
-          setTimeout(() => {
-            navigate("/mentor/MentordDashboard");
-          }, 1500);
+          setTimeout(() => navigate("/mentor/MentordDashboard"), 1500);
         }
       }
     };
@@ -42,7 +49,7 @@ const MentorPendingApproval = () => {
     return () => window.removeEventListener("storage", handleStorageChange);
   }, [navigate]);
 
-  if (loading) return null;
+  if (loading) return null; 
 
   return (
     <div className="min-h-screen relative bg-[#020617] text-slate-200 overflow-hidden font-sans">

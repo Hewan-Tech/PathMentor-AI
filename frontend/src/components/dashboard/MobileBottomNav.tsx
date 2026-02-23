@@ -10,7 +10,7 @@ import {
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { icon: LayoutDashboard, label: "Home", path: "/dashboard" },
+  { icon: LayoutDashboard, label: "Home", path: "AdminDashboard" },
   { icon: Map, label: "Roadmap", path: "/roadmap" },
   { icon: BookOpen, label: "Learn", path: "/lessons" },
   { icon: Bot, label: "AI", path: "/ai-mentor" },
