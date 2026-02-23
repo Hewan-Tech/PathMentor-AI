@@ -67,9 +67,13 @@ const registerUser = async (req, res) => {
                 name: user.name,
                 email: user.email,
                 role: user.role,
-                onboardingCompleted: user.onboardingCompleted
+                onboardingCompleted: user.onboardingCompleted,
+                mentorVerification: {
+                    status: user.mentorVerification.status
+                 }
             }
         });
+        
 
     } catch (error) {
         console.error("Register Error:", error);
@@ -111,17 +115,17 @@ const loginUser = async (req, res) => {
                 message: "Invalid email or password"
             });
         }
-     if(user.role=== "mentor"){
-        const status= user.mentorVerification?.status;
+    //  if(user.role=== "mentor"){
+    //     const status= user.mentorVerification?.status;
 
-        if(status === "pending"){
-            return res.status(403).json({
-                message: "Your account is waiting for admin approval",
-            });
-        }
+    //     if(status === "pending"){
+    //         return res.status(403).json({
+    //             message: "Your account is waiting for admin approval",
+    //         });
+    //     }
 
       
-     }
+     
 
 
         // Generate token

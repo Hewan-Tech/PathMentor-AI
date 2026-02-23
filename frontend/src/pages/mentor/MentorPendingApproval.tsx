@@ -21,20 +21,8 @@ const MentorPendingApproval = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // 1. Check current status from LocalStorage on mount
-    const checkInitialStatus = () => {
-      const savedUser = JSON.parse(localStorage.getItem("user") || "{}");
-      if (savedUser.status === "approved") {
-        navigate("/mentor/dashboard");
-      } else {
-        setStatus(savedUser.status || "pending");
-      }
-      setLoading(false);
-    };
-
-    checkInitialStatus();
-
-    // 2. THE "AUTO-LANDING" MAGIC (Frontend Only)
+  
+    // THE "AUTO-LANDING" MAGIC (Frontend Only)
     // This listens for changes in LocalStorage happening in OTHER tabs (Admin tab)
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === "user") {

@@ -52,7 +52,7 @@ const Dashboard = () => {
   const [lessons, setLessons] = useState<RecommendedLesson[]>([]);
   const [loadingData, setLoadingData] = useState(false); // ✅ FIXED
 
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // 🔐 Fetch user from Express (JWT)

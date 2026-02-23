@@ -30,7 +30,7 @@ const Auth = () => {
 
    const [cvFile, setCvFile] = useState<File | null>(null);
   const [additionalFile, setAdditionalFile] = useState<File | null>(null);
-  
+  const [user, setUser] = useState(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -42,12 +42,6 @@ const Auth = () => {
     setIsLogin(searchParams.get("mode") !== "register");
   }, [searchParams]);
 
-  // Redirect if already authenticated
-  // useEffect(() => {
-  //   if (user) {
-  //     navigate("/dashboard");
-  //   }
-  // }, [user, navigate]);
 
   const validateForm = () => {
     try {
@@ -96,12 +90,12 @@ const Auth = () => {
 
     const res = await api.post(endpoint, payload);
 
-    // 🎯 Axios response
     const { token, user } = res.data;
 
     // Save JWT
     localStorage.setItem("token", token);
     localStorage.setItem("user", JSON.stringify(user));
+
     toast({
       title: isLogin ? "Welcome back!" : "Account created!",
       description: isLogin
@@ -109,23 +103,26 @@ const Auth = () => {
         : "Welcome to PathMentor!",
     });
 
-// order matters
-if (user.role === "mentor" && user.mentorVerification?.status !== "approved") {
-  navigate("/mentor/pending-approval");
-}
-else if (!user.onboardingCompleted && user.role === "student") {
-  navigate("/register"); // onboarding
-}
-else if (user.role === "mentor" ) {
-  navigate("/mentor/dashboard");
-}
-else if (user.role === "admin") {
-  navigate("/admin/dashboard");
-}
-else {
-  navigate("/dashboard"); // student dashboard~
-}
+    console.log("LOGIN USER:", user);
+    console.log("MENTOR STATUS:", user.mentorVerification?.status);
 
+    // ✅ Proper Role-Based Navigation
+    if (user.role === "mentor") {
+      const status =
+        user.mentorVerification?.status?.toLowerCase().trim();
+
+      if (status === "pending") {
+        navigate("/mentor/pending");
+      } else {
+        navigate("/mentor/dashboard");
+      }
+    } else if (user.role === "admin") {
+      navigate("/admin/dashboard");
+    } else if (user.role === "student" && !user.onboardingCompleted) {
+      navigate("/register");
+    } else {
+      navigate("/dashboard");
+    }
 
   } catch (error: any) {
     toast({
@@ -139,7 +136,6 @@ else {
     setIsSubmitting(false);
   }
 };
-
 
   return (
     <div className="min-h-screen relative flex items-center justify-center p-4">

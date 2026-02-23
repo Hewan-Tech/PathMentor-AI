@@ -62,11 +62,6 @@ const MentorDashboard = () => {
           return;
         }
 
-        if (user.status !== "approved") {
-          navigate("/mentor/pending");
-          return;
-        }
-
         fetchMentorData();
       } catch (err) {
         navigate("/auth");
