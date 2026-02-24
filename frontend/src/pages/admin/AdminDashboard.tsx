@@ -53,6 +53,11 @@ const AdminDashboard = () => {
     const pending = await api.get("/admin/pending-mentors");
     setPendingMentors(pending.data);
   };
+  const rejectMentor = async (id: string) => {
+    await api.put(`/admin/mentor/${id}/reject`);
+    const pending = await api.get("/admin/pending-mentors");
+    setPendingMentors(pending.data);
+  };
 
   const logout = () => {
     localStorage.clear();
@@ -154,7 +159,7 @@ const AdminDashboard = () => {
                                         <button onClick={() => approveMentor(m._id)} className="p-2 bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white rounded-lg transition-all border border-emerald-500/20">
                                             <Check size={16} />
                                         </button>
-                                        <button className="p-2 bg-rose-500/10 text-red-500 hover:bg-rose-500 hover:text-white rounded-lg transition-all border border-rose-500/20">
+                                        <button onClick={()=> rejectMentor(m._id)} className="p-2 bg-rose-500/10 text-red-500 hover:bg-rose-500 hover:text-white rounded-lg transition-all border border-rose-500/20">
                                             <X size={16} />
                                         </button>
                                     </div>
