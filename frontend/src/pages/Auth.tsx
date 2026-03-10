@@ -26,7 +26,7 @@ const Auth = () => {
     email: "",
     password: "",
     role: "student" as "student" | "mentor",
-  });
+  }); 
 
    const [cvFile, setCvFile] = useState<File | null>(null);
   const [additionalFile, setAdditionalFile] = useState<File | null>(null);
@@ -224,14 +224,14 @@ const Auth = () => {
                     placeholder="Full Name"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full pl-10 pr-4 py-3 glass-inner-glow rounded-xl bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-primary/50 placeholder:text-muted-foreground"
-                  />
+                    className="w-full pl-10 pr-4 py-3 glass-inner-glow rounded-xl bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-primary/50 placeholder:text-muted-foreground"/>
                 </div>
                 {errors.fullName && (
                   <p className="text-destructive text-xs mt-1 ml-1">{errors.fullName}</p>
                 )}
               </div>
-            )}
+            )
+            }
 
             <div>
               <div className="relative">

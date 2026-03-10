@@ -25,12 +25,16 @@ router.get("/dashboard", guard, authorize("admin"), async (req, res) => {
     const totalStudents = await User.countDocuments({
       role: "student",
     });
+    const totalMentors= await User.countDocuments({
+      role: "mentor"
+    });
 
     res.status(200).json({
       verifiedMentors,
       pendingMentors,
       rejectedMentors,
       totalStudents,
+      totalMentors,
     });
   } catch (error) {
     console.error("Admin dashboard error:", error);
@@ -40,18 +44,51 @@ router.get("/dashboard", guard, authorize("admin"), async (req, res) => {
 
 /* ================= GET PENDING MENTORS ================= */
 
-router.get("/pending-mentors", guard, authorize("admin"), async (req, res) => {
-  try {
-    const mentors = await User.find({
-      role: "mentor",
-      "mentorVerification.status": "pending",
-    }).select("-password");
+// router.get("/pending-mentors", guard, authorize("admin"), async (req, res) => {
+//   try {
+//     const mentors = await User.find({
+//       role: "mentor",
+//       "mentorVerification.status": "pending",
+//     }).select("-password");
 
-    res.status(200).json(mentors);
-  } catch (error) {
-    res.status(500).json({ message: "Server error" });
+//     res.status(200).json(mentors);
+//   } catch (error) {
+//     res.status(500).json({ message: "Server error" });
+//   }
+// });
+/**
+ * ================= GET PENDING MENTORS =================
+ * GET /api/admin/pending-mentors
+ */
+router.get(
+  "/pending-mentors",
+  guard,
+  authorize("admin"),
+  async (req, res) => {
+    try {
+      const mentors = await User.find({
+        role: "mentor",
+        "mentorVerification.status": "pending",
+      })
+        .select(
+          "name email mentorVerification createdAt"
+        )
+        .sort({ createdAt: -1 });
+
+      res.status(200).json({
+        success: true,
+        count: mentors.length,
+        mentors,
+      });
+    } catch (error) {
+      console.error("Fetch pending mentors error:", error);
+      res.status(500).json({
+        success: false,
+        message: "Server error",
+      });
+    }
   }
-});
+);
 
 /* ================= APPROVE MENTOR ================= */
 

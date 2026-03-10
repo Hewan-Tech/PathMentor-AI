@@ -32,4 +32,9 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5OGM0ZTg2M
   "newPassword": "Admin!1234"
 }
 
-
+###Get
+GET http://localhost:5000/api/admin/dashboard
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5OTQxNTEyNWU2MDAxN2MxYTVlMjQzNyIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc3MTkyMjkwOCwiZXhwIjoxNzcyNTI3NzA4fQ.qalymmwILqo1D2PvT4kSfd-JChXakiQhLWZK27Tfq34
+###GET
+GET http://localhost:5000/api/admin/pending-mentors
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5OTQxNTEyNWU2MDAxN2MxYTVlMjQzNyIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc3MTkyMzM4NCwiZXhwIjoxNzcyNTI4MTg0fQ.NKxZRCa0C1wL16upu5MjS5yu4EYTQ8ZWb--FtKoDdlU

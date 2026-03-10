@@ -50,12 +50,12 @@ const Dashboard = () => {
   // MongoDB data (future use)
   const [preferences, setPreferences] = useState<UserPreferences | null>(null);
   const [lessons, setLessons] = useState<RecommendedLesson[]>([]);
-  const [loadingData, setLoadingData] = useState(false); // ✅ FIXED
+  const [loadingData, setLoadingData] = useState(false); // 
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
-  // 🔐 Fetch user from Express (JWT)
+  // Fetch user from Express (JWT)
  useEffect(() => {
   const token = localStorage.getItem("token");
 
@@ -71,7 +71,7 @@ const Dashboard = () => {
 
       setUser(userData);
 
-      // 🔥 Handle learningProfile from MongoDB
+      // Handle learningProfile from MongoDB
       if (userData.learningProfile) {
         setPreferences({
           skill_track: userData.learningProfile.skillTrack,
@@ -87,7 +87,7 @@ const Dashboard = () => {
         });
       }
 
-      // 🔥 If you later create lessons in MongoDB
+      // If you later create lessons in MongoDB
       if (userData.recommendedLessons) {
         setLessons(userData.recommendedLessons);
       }
@@ -105,13 +105,13 @@ const Dashboard = () => {
 }, [navigate]);
 
 
-  // 🚪 Logout
+  //Logout
   const handleSignOut = () => {
     localStorage.removeItem("token");
     navigate("/auth");
   };
 
-  // ⏳ Loading state
+  // Loading state
   if (isLoading || loadingData) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -124,7 +124,7 @@ const Dashboard = () => {
     );
   }
 
-  // 👤 User info from MongoDB
+  // User info from MongoDB
   const userName =
     user?.name ||
     user?.username ||
