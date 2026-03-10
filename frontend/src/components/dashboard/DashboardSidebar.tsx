@@ -20,11 +20,7 @@ interface DashboardSidebarProps {
 }
 
 const navItems = [
-<<<<<<< Updated upstream
-  { icon: LayoutDashboard, label: "Dashboard" },
-=======
   { icon: LayoutDashboard, label: "Dashboard", path: "DYNAMIC" },
->>>>>>> Stashed changes
   { icon: Map, label: "Roadmap", path: "/roadmap" },
   { icon: BookOpen, label: "Lessons", path: "/lessons" },
   { icon: FolderKanban, label: "Projects", path: "/projects" },

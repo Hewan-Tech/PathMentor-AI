@@ -31,11 +31,7 @@ router.post("/upload-documents", guard, upload.array("documents", 5),async(req, 
     }
 } ); 
 
-router.get(
-  "/dashboard",
-  guard,
-  authorize("mentor"),
-  async (req, res) => {
+router.get( "/dashboard", guard, authorize("mentor"), async (req, res) => {
     try {
       const mentor = await User.findById(req.user.id);
 
