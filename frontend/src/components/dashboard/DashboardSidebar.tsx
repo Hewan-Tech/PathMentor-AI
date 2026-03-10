@@ -20,7 +20,11 @@ interface DashboardSidebarProps {
 }
 
 const navItems = [
+<<<<<<< Updated upstream
   { icon: LayoutDashboard, label: "Dashboard" },
+=======
+  { icon: LayoutDashboard, label: "Dashboard", path: "DYNAMIC" },
+>>>>>>> Stashed changes
   { icon: Map, label: "Roadmap", path: "/roadmap" },
   { icon: BookOpen, label: "Lessons", path: "/lessons" },
   { icon: FolderKanban, label: "Projects", path: "/projects" },
@@ -36,7 +40,14 @@ export const DashboardSidebar = ({
   onToggleCollapse,
 }: DashboardSidebarProps) => {
   const location = useLocation();
+const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
 
+const dashboardPath =
+  storedUser.role === "admin"
+    ? "/admin/dashboard"
+    : storedUser.role === "mentor"
+    ? "/mentor/dashboard"
+    : "/dashboard";
   return (
     <>
       {/* Backdrop for mobile */}
@@ -81,11 +92,13 @@ export const DashboardSidebar = ({
           {/* Navigation */}
           <nav className="flex-1 space-y-2 mt-4">
             {navItems.map((item) => {
-              const isActive = location.pathname === item.path;
+             const currentPath =
+  item.label === "Dashboard" ? dashboardPath : item.path;
+const isActive = location.pathname === currentPath;
               return (
                 <NavLink
-                  key={item.path}
-                  to={item.path}
+                  key={item.label}
+                  to={currentPath}
                   onClick={() => window.innerWidth < 1024 && onClose()}
                   className={cn(
                     "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300",

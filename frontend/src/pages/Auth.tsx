@@ -118,11 +118,13 @@ const Auth = () => {
       }
     } else if (user.role === "admin") {
       navigate("/admin/dashboard");
-    } else if (user.role === "student" && !user.onboardingCompleted) {
-      navigate("/register");
-    } else {
-      navigate("/dashboard");
-    }
+    } else if (user.role === "student") {
+  if (!user.onboardingCompleted) {
+    navigate("/register");
+  } else {
+    navigate("/dashboard");
+  }
+}
 
   } catch (error: any) {
     toast({
