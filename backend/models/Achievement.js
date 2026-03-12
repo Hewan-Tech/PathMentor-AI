@@ -1,32 +1,26 @@
 const mongoose = require("mongoose");
 
-const progressSchema = new mongoose.Schema(
-  {
-    studentId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-    },
+const achievementSchema = new mongoose.Schema({
 
-    lessonId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Lesson",
-    },
-
-    completed: {
-      type: Boolean,
-      default: false,
-    },
-
-    score: Number,
-
-    xpEarned: {
-      type: Number,
-      default: 0,
-    },
-
-    completedAt: Date,
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User"
   },
-  { timestamps: true }
-);
 
-module.exports = mongoose.model("Progress", progressSchema);
+  title: {
+    type: String,
+    required: true
+  },
+
+  description: String,
+
+  icon: String,
+
+  earnedAt: {
+    type: Date,
+    default: Date.now
+  }
+
+});
+
+module.exports = mongoose.model("Achievement", achievementSchema);

@@ -9,16 +9,21 @@ const lessonSchema = new mongoose.Schema(
 
     description: String,
 
-    track: {
-      type: String,
-      required: true,
-    },
+    
+  course: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Course",
+    required: true
+  },
 
     level: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
       required: true,
+      ref: "Level"
     },
-
+      order: {
+    type: Number
+  },
     content: String,
 
     videoUrl: String,

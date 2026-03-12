@@ -5,6 +5,14 @@ const adminRoutes = require("./routes/adminRoutes");
 const dotenv = require ("dotenv");
 const cors=require("cors");
 const connectDB = require("./config/db");
+const errorHandler = require("./middleware/errorMiddleware");
+const levelRoutes = require("./routes/levelRoutes");
+const courseRoutes = require("./routes/courseRoutes");
+const lessonRoutes = require("./routes/lessonRoutes");
+const quizRoutes = require("./routes/quizRoutes");
+const progressRoutes = require("./routes/progressRoutes");
+
+
 
 dotenv.config(); 
 console.log("MONGO_URI:", process.env.MONGO_URI);
@@ -21,7 +29,13 @@ app.use(cors({
 app.use("/api/auth", authRoutes);
 app.use("/api/users", require("./routes/userRoutes"));
 app.use("/api/admin", adminRoutes);
+app.use("/api/courses", courseRoutes);
+app.use("/api/levels", levelRoutes);
+app.use("/api/lessons", lessonRoutes);
+app.use("/api/quizzes", quizRoutes);
+app.use("/api/progress", progressRoutes);
 
+app.use(errorHandler);
 app.listen(PORT, ()=>{
     console.log(`server is running on port ${PORT}`);
 })

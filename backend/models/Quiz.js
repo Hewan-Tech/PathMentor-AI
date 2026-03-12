@@ -1,36 +1,33 @@
 const mongoose = require("mongoose");
 
-const lessonSchema = new mongoose.Schema(
-  {
-    title: {
-      type: String,
-      required: true,
-    },
-
-    description: String,
-
-    track: {
-      type: String,
-      required: true,
-    },
-
-    level: {
-      type: String,
-      required: true,
-    },
-
-    content: String,
-
-    videoUrl: String,
-
-    images: [String],
-
-    createdBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-    },
+const questionSchema = new mongoose.Schema({
+  question: {
+    type: String,
+    required: true
   },
-  { timestamps: true }
-);
 
-module.exports = mongoose.model("Lesson", lessonSchema);
+  options: [{
+    type: String,
+    required: true
+  }],
+
+  correctAnswer: {
+    type: Number, // index of correct option
+    required: true
+  }
+
+});
+
+const quizSchema = new mongoose.Schema({
+
+  lesson: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Lesson",
+    required: true
+  },
+
+  questions: [questionSchema]
+
+}, { timestamps: true });
+
+module.exports = mongoose.model("Quiz", quizSchema);
