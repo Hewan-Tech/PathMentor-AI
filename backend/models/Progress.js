@@ -1,7 +1,32 @@
 const mongoose = require("mongoose");
 
-const progressSchema = new mongoose.Schema(
-{
+const levelProgressSchema = new mongoose.Schema({
+
+  level: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Level",
+    required: true
+  },
+
+  completedLessons: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Lesson"
+  }],
+
+  score: {
+    type: Number,
+    default: 0
+  },
+
+  isCompleted: {
+    type: Boolean,
+    default: false
+  }
+
+});
+
+const progressSchema = new mongoose.Schema({
+
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
@@ -14,30 +39,13 @@ const progressSchema = new mongoose.Schema(
     required: true
   },
 
-  completedLessons: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Lesson"
-  }],
+  levelsProgress: [levelProgressSchema],
 
   xpEarned: {
     type: Number,
     default: 0
-  },
+  }
 
-  currentLevel: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Level"
-  },
-
-  score: {
-    type: Number,
-    default: 0
-  },
-
-  completedAt: Date
-
-},
-{ timestamps: true }
-);
+}, { timestamps: true });
 
 module.exports = mongoose.model("Progress", progressSchema);
