@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const { body } = require("express-validator");
 
 const {
   createAnnouncement,
@@ -8,6 +9,18 @@ const {
 } = require("../controllers/announcementController");
 
 const { guard, authorize } = require("../middleware/authMiddleware");
+
+router.post(
+  "/",
+  guard,
+  authorize("admin", "mentor"),
+
+  //  VALIDATION
+  body("title").notEmpty().withMessage("Title is required"),
+  body("message").notEmpty().withMessage("Message is required"),
+
+  createAnnouncement
+);
 
 
 // Only admin & mentor can create

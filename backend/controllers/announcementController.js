@@ -1,5 +1,6 @@
 const Announcement = require("../models/Announcement");
 const asyncHandler = require("../middleware/asyncHandler");
+const { validationResult } = require("express-validator");
 
 
 /*
@@ -8,6 +9,15 @@ CREATE ANNOUNCEMENT
 ========================================
 */
 const createAnnouncement = asyncHandler(async (req, res) => {
+
+  // ✅ VALIDATION MUST BE HERE
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      errors: errors.array()
+    });
+  }
 
   const { title, message, course } = req.body;
 

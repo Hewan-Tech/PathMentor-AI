@@ -12,7 +12,7 @@ const matchSchema = new mongoose.Schema(
       ref: "User",
     },
 
-    track: String,
+    course: String,
 
     level: String,
   },

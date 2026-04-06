@@ -13,6 +13,8 @@ const quizRoutes = require("./routes/quizRoutes");
 const progressRoutes = require("./routes/progressRoutes");
 const leaderboardRoutes = require("./routes/leaderboardRoutes");
 const announcementRoutes = require("./routes/announcementRoutes");
+const rateLimit = require("express-rate-limit");
+
 
 dotenv.config(); 
 console.log("MONGO_URI:", process.env.MONGO_URI);
@@ -25,6 +27,13 @@ app.use(cors({
   origin: "http://localhost:8080",
   credentials: true
 }));
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 min
+  max: 100 // max requests
+});
+
+app.use(limiter);
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", require("./routes/userRoutes"));

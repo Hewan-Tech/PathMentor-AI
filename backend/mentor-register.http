@@ -29,6 +29,6 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5OTQxNTEyN
 Content-Type: application/json
 
 ###
-PUT http://localhost:5000/api/admin/mentor/698e57a6b2f11e2243244a38/reject
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5OGU1N2E2YjJmMTFlMjI0MzI0NGEzOCIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc3MDkzNzA4MSwiZXhwIjoxNzcxNTQxODgxfQ.MTEmgvnEdr6aIZNZVx9oYqcf-A-4gSUNu0_miXIAV7w"
+PUT http://localhost:5000/api/admin/mentor/69d3ad52436452ea1244d437/reject
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5ZDNhOTQzNDM2NDUyZWExMjQ0ZDNmYiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc3NTQ4MDE4NCwiZXhwIjoxNzc2MDg0OTg0fQ.qrHWY2T4v6SvBB_TUAfmNJNH2WpXnUuymEnWGZEgmog
 Content-Type: application/json
