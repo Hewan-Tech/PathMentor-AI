@@ -79,7 +79,15 @@ const AdminDashboard = () => {
     localStorage.clear();
     navigate("/auth");
   };
+    /* ------------------rejected-------------------*/
+    const rejectMentor = async(id: string) => {
+      await api.put(`/admin/mentor/${id}/reject`);
+      const pending = await api.get("/admin/pending-mentors");
 
+    // ✅ FIX AGAIN
+    setPendingMentors(pending.data.mentors || []);
+
+    }
   /* ================= LOADING ================= */
 
   if (loading) {
@@ -180,7 +188,8 @@ const AdminDashboard = () => {
                           <Check size={16} />
                         </button>
 
-                        <button className="p-2 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-lg transition-all">
+                        <button onClick={()=> rejectMentor(m._id)}
+                        className="p-2 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-lg transition-all">
                           <X size={16} />
                         </button>
                       </td>

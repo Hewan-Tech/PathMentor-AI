@@ -115,19 +115,7 @@ const loginUser = async (req, res) => {
                 message: "Invalid email or password"
             });
         }
-    //  if(user.role=== "mentor"){
-    //     const status= user.mentorVerification?.status;
-
-    //     if(status === "pending"){
-    //         return res.status(403).json({
-    //             message: "Your account is waiting for admin approval",
-    //         });
-    //     }
-
-      
-     
-
-
+   
         // Generate token
         const token = jwt.sign(
             {
