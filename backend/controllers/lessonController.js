@@ -33,9 +33,27 @@ if(!level){
 
 const getLessonsByLevel = asyncHandler(async (req, res) => {
 
-  const lessons = await Lesson.find({
-    level: req.params.levelId
-  }).sort({ order: 1 });
+  const levelId = req.params.levelId;
+
+  const level = await Level.findById(levelId);
+
+  const progress = await Progress.findOne({
+    user: req.user._id,
+    course: level.course
+  });
+
+  const levelProgress = progress?.levelsProgress?.find(lp =>
+    lp.level.toString() === levelId
+  );
+
+  // 🔥 BLOCK ACCESS
+  if (!levelProgress && level.order !== 1) {
+    return res.status(403).json({
+      message: "Level locked. Complete previous level."
+    });
+  }
+
+  const lessons = await Lesson.find({ level: levelId }).sort({ order: 1 });
 
   res.json({
     success: true,
@@ -43,5 +61,6 @@ const getLessonsByLevel = asyncHandler(async (req, res) => {
   });
 
 });
+
 
 module.exports = {createLesson, getLessonsByLevel}
