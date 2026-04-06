@@ -10,13 +10,14 @@ import Auth from "./pages/Auth";
 import Register from "./pages/Register";
 import Roadmap from "./pages/Roadmap";
 import Dashboard from "./pages/Dashboard";
+import ProfilePage from "./pages/ProfilePage";
 
 // Mentor Pages
 import MentorDashboard from "./pages/mentor/MentorDashboard";
 import MentorPendingApproval from "./pages/mentor/MentorPendingApproval";
 
-// Admin Pages - UPDATED IMPORT HERE
-import AdminLayout from "./pages/admin/AdminLayout"; // Adjusted to match your folder structure
+// Admin Pages
+import AdminLayout from "./pages/admin/AdminLayout"; 
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminStudents from "./pages/admin/AdminStudents";
@@ -42,17 +43,16 @@ const App = () => (
           {/* Student Routes */}
           <Route path="/roadmap" element={<Roadmap />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          {/* MOVED: Profile is now accessible at /profile */}
+          <Route path="/profile" element={<ProfilePage />} />
           
           {/* Mentor Routes */}
           <Route path="/mentor/pending" element={<MentorPendingApproval />} />
           <Route path="/mentor/dashboard" element={<MentorDashboard />} />
 
-          {/* ADMIN ROUTES - Wrapped in the Layout */}
+          {/* ADMIN ROUTES */}
           <Route path="/admin" element={<AdminLayout />}>
-            {/* Redirects /admin to /admin/dashboard */}
             <Route index element={<Navigate to="/admin/dashboard" replace />} />
-            
-            {/* All these children will render INSIDE the AdminLayout's <Outlet /> */}
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="students" element={<AdminStudents />} />
             <Route path="students/:id" element={<AdminStudents />} />

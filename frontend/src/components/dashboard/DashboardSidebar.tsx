@@ -19,16 +19,6 @@ interface DashboardSidebarProps {
   onToggleCollapse: () => void;
 }
 
-const navItems = [
-  { icon: LayoutDashboard, label: "Dashboard", path: "DYNAMIC" },
-  { icon: Map, label: "Roadmap", path: "/roadmap" },
-  { icon: BookOpen, label: "Lessons", path: "/lessons" },
-  { icon: FolderKanban, label: "Projects", path: "/projects" },
-  { icon: Bot, label: "AI Mentor", path: "/ai-mentor" },
-  { icon: TrendingUp, label: "Progress", path: "/progress" },
-  { icon: Settings, label: "Settings", path: "/settings" },
-];
-
 export const DashboardSidebar = ({
   isOpen,
   onClose,
@@ -36,17 +26,28 @@ export const DashboardSidebar = ({
   onToggleCollapse,
 }: DashboardSidebarProps) => {
   const location = useLocation();
-const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+  const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+  const isStudent = storedUser.role === "student" || !storedUser.role;
 
-const dashboardPath =
-  storedUser.role === "admin"
-    ? "/admin/dashboard"
-    : storedUser.role === "mentor"
-    ? "/mentor/dashboard"
-    : "/dashboard";
+  const dashboardPath =
+    storedUser.role === "admin"
+      ? "/admin/dashboard"
+      : storedUser.role === "mentor"
+      ? "/mentor/dashboard"
+      : "/dashboard";
+
+  // UPDATED: Projects now scrolls on Dashboard for students
+  const navItems = [
+    { icon: LayoutDashboard, label: "Dashboard", path: dashboardPath },
+    { icon: Map, label: "Roadmap", path: isStudent ? "/dashboard#roadmap" : "/roadmap" },
+    { icon: BookOpen, label: "Lessons", path: isStudent ? "/dashboard#lessons" : "/lessons" },
+    { icon: FolderKanban, label: "Projects", path: isStudent ? "/dashboard#projects" : "/projects" },
+    { icon: TrendingUp, label: "Progress", path: "/progress" },
+    { icon: Settings, label: "Settings", path: "/settings" },
+  ];
+
   return (
     <>
-      {/* Backdrop for mobile */}
       {isOpen && (
         <motion.div
           initial={{ opacity: 0 }}
@@ -57,7 +58,6 @@ const dashboardPath =
         />
       )}
 
-      {/* Sidebar */}
       <motion.aside
         initial={false}
         animate={{
@@ -72,79 +72,57 @@ const dashboardPath =
         )}
       >
         <div className="flex flex-col h-full p-4">
-          {/* Collapse toggle - desktop only */}
           <button
             onClick={onToggleCollapse}
             className="hidden lg:flex absolute -right-3 top-24 w-6 h-6 rounded-full bg-muted border border-border items-center justify-center hover:bg-muted/80 transition-colors"
           >
-            <ChevronLeft
-              className={cn(
-                "w-4 h-4 transition-transform",
-                isCollapsed && "rotate-180"
-              )}
-            />
+            <ChevronLeft className={cn("w-4 h-4 transition-transform", isCollapsed && "rotate-180")} />
           </button>
 
-          {/* Navigation */}
           <nav className="flex-1 space-y-2 mt-4">
             {navItems.map((item) => {
-             const currentPath =
-  item.label === "Dashboard" ? dashboardPath : item.path;
-const isActive = location.pathname === currentPath;
+              const isActive = 
+                (location.pathname === item.path) || 
+                (location.pathname + location.hash === item.path);
+
               return (
                 <NavLink
                   key={item.label}
-                  to={currentPath}
-                  onClick={() => window.innerWidth < 1024 && onClose()}
+                  to={item.path}
+                  onClick={() => {
+                    if (window.innerWidth < 1024) onClose();
+                    
+                    // IMPROVED SCROLL LOGIC: Specifically targets the ID after the '#'
+                    if (item.path.includes("#") && location.pathname === "/dashboard") {
+                      const id = item.path.split("#")[1];
+                      const element = document.getElementById(id);
+                      if (element) {
+                        element.scrollIntoView({ behavior: "smooth" });
+                      }
+                    }
+                  }}
                   className={cn(
                     "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300",
-                    "hover:bg-white/10",
+                    "hover:bg-white/10 text-white",
                     isActive && "bg-primary/20 border border-primary/30",
                     isCollapsed && "justify-center px-3"
                   )}
                 >
-                  <motion.div
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <item.icon
-                      className={cn(
-                        "w-5 h-5 transition-colors",
-                        isActive ? "text-primary" : "text-muted-foreground"
-                      )}
-                    />
+                  <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
+                    <item.icon className={cn("w-5 h-5", isActive ? "text-primary" : "text-muted-foreground")} />
                   </motion.div>
                   {!isCollapsed && (
-                    <motion.span
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className={cn(
-                        "text-sm font-medium transition-colors",
-                        isActive ? "text-foreground" : "text-muted-foreground"
-                      )}
-                    >
+                    <span className={cn("text-sm font-medium", isActive ? "text-foreground" : "text-muted-foreground")}>
                       {item.label}
-                    </motion.span>
-                  )}
-                  {isActive && !isCollapsed && (
-                    <motion.div
-                      layoutId="activeIndicator"
-                      className="ml-auto w-1.5 h-1.5 rounded-full bg-primary"
-                    />
+                    </span>
                   )}
                 </NavLink>
               );
             })}
           </nav>
 
-          {/* AI Mentor Quick Access - at bottom */}
           {!isCollapsed && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="mt-auto"
-            >
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mt-auto">
               <div className="glass-inner-glow p-4 rounded-2xl">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-10 h-10 rounded-xl bg-gradient-teal flex items-center justify-center">
