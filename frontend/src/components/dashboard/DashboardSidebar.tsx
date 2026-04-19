@@ -1,12 +1,11 @@
 import { motion } from "framer-motion";
-import { NavLink, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
-  Map,
+  Award,
   BookOpen,
   FolderKanban,
   Bot,
-  TrendingUp,
+  Users,
   Settings,
   ChevronLeft,
 } from "lucide-react";
@@ -17,6 +16,8 @@ interface DashboardSidebarProps {
   onClose: () => void;
   isCollapsed: boolean;
   onToggleCollapse: () => void;
+  activeView: string;
+  onViewChange: (view: string) => void;
 }
 
 export const DashboardSidebar = ({
@@ -24,26 +25,17 @@ export const DashboardSidebar = ({
   onClose,
   isCollapsed,
   onToggleCollapse,
+  activeView,
+  onViewChange,
 }: DashboardSidebarProps) => {
-  const location = useLocation();
-  const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
-  const isStudent = storedUser.role === "student" || !storedUser.role;
 
-  const dashboardPath =
-    storedUser.role === "admin"
-      ? "/admin/dashboard"
-      : storedUser.role === "mentor"
-      ? "/mentor/dashboard"
-      : "/dashboard";
-
-  // UPDATED: Projects now scrolls on Dashboard for students
   const navItems = [
-    { icon: LayoutDashboard, label: "Dashboard", path: dashboardPath },
-    { icon: Map, label: "Roadmap", path: isStudent ? "/dashboard#roadmap" : "/roadmap" },
-    { icon: BookOpen, label: "Lessons", path: isStudent ? "/dashboard#lessons" : "/lessons" },
-    { icon: FolderKanban, label: "Projects", path: isStudent ? "/dashboard#projects" : "/projects" },
-    { icon: TrendingUp, label: "Progress", path: "/progress" },
-    { icon: Settings, label: "Settings", path: "/settings" },
+    { icon: LayoutDashboard, label: "Dashboard", id: "dashboard" },
+    { icon: BookOpen, label: "Lessons", id: "lessons" },
+    { icon: FolderKanban, label: "Projects", id: "projects" },
+    { icon: Award, label: "Achievements", id: "progress" },
+    { icon: Users, label: "Community", id: "community" },
+    { icon: Settings, label: "Settings", id: "settings" },
   ];
 
   return (
@@ -67,7 +59,7 @@ export const DashboardSidebar = ({
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
         className={cn(
           "fixed top-0 left-0 h-full z-50 pt-20",
-          "glass-sidebar",
+          "glass-sidebar bg-background/80 backdrop-blur-md border-r border-white/10",
           "lg:translate-x-0 lg:z-30"
         )}
       >
@@ -81,63 +73,36 @@ export const DashboardSidebar = ({
 
           <nav className="flex-1 space-y-2 mt-4">
             {navItems.map((item) => {
-              const isActive = 
-                (location.pathname === item.path) || 
-                (location.pathname + location.hash === item.path);
-
+              const isActive = activeView === item.id;
               return (
-                <NavLink
-                  key={item.label}
-                  to={item.path}
+                <button
+                  key={item.id}
                   onClick={() => {
+                    onViewChange(item.id);
                     if (window.innerWidth < 1024) onClose();
-                    
-                    // IMPROVED SCROLL LOGIC: Specifically targets the ID after the '#'
-                    if (item.path.includes("#") && location.pathname === "/dashboard") {
-                      const id = item.path.split("#")[1];
-                      const element = document.getElementById(id);
-                      if (element) {
-                        element.scrollIntoView({ behavior: "smooth" });
-                      }
-                    }
                   }}
                   className={cn(
-                    "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300",
-                    "hover:bg-white/10 text-white",
-                    isActive && "bg-primary/20 border border-primary/30",
-                    isCollapsed && "justify-center px-3"
+                    "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300",
+                    isActive ? "bg-primary/20 text-primary border border-primary/20" : "text-muted-foreground hover:bg-white/5 hover:text-white"
                   )}
                 >
-                  <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
-                    <item.icon className={cn("w-5 h-5", isActive ? "text-primary" : "text-muted-foreground")} />
-                  </motion.div>
-                  {!isCollapsed && (
-                    <span className={cn("text-sm font-medium", isActive ? "text-foreground" : "text-muted-foreground")}>
-                      {item.label}
-                    </span>
-                  )}
-                </NavLink>
+                  <item.icon size={20} />
+                  {!isCollapsed && <span className="text-sm font-medium">{item.label}</span>}
+                </button>
               );
             })}
           </nav>
-
+          
+          {/* AI Support Mini-Card */}
           {!isCollapsed && (
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mt-auto">
-              <div className="glass-inner-glow p-4 rounded-2xl">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-teal flex items-center justify-center">
-                    <Bot className="w-5 h-5 text-teal-foreground" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">AI Mentor</p>
-                    <p className="text-xs text-muted-foreground">Ready to help</p>
-                  </div>
-                </div>
-                <button className="w-full py-2 rounded-xl bg-white/10 hover:bg-white/15 text-sm font-medium transition-colors">
-                  Ask a question
-                </button>
+            <div className="mt-auto p-4 bg-white/5 rounded-2xl border border-white/10">
+              <div className="flex items-center gap-2 mb-2">
+                <Bot size={18} className="text-primary" />
+                <span className="text-xs font-bold">PathMentor AI</span>
               </div>
-            </motion.div>
+              <p className="text-[10px] opacity-50 mb-3">Ask me anything about your current module.</p>
+              <button className="w-full py-2 bg-primary/10 text-primary text-[11px] rounded-lg font-bold">Ask Question</button>
+            </div>
           )}
         </div>
       </motion.aside>

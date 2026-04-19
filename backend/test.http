@@ -1,11 +1,12 @@
+###
 POST http://localhost:5000/api/auth/register
 Content-Type: application/json
 
 {
   "name": "Hewan",
-  "email": "hewanstudent@gmail.com",
-  "password": "Student!1234",
-  "role": "student"
+  "email": "hewanadmin@gmail.com",
+  "password": "Ad!1234",
+  "role": "admin"
 }
 ###Login
 POST http://localhost:5000/api/auth/login

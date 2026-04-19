@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import api from "@/services/api";
 import { PersonaType } from "@/lib/registrationTypes";
 import { ParticlesBackground } from "@/components/landing/ParticlesBackground";
@@ -18,8 +18,12 @@ import { StatsGrid } from "@/components/dashboard/StatsGrid";
 import { AIMentorOrb } from "@/components/dashboard/AIMentorOrb";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { GlassButton } from "@/components/ui/GlassButton";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { 
+  ArrowRight, Sparkles, CheckCircle2, Moon, Sun, 
+  Bell, Shield, Monitor, Smartphone 
+} from "lucide-react";
 
+// Types stay the same
 interface UserPreferences {
   skill_track: string;
   experience_level: string;
@@ -43,111 +47,74 @@ interface RecommendedLesson {
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  
+  // 1. STATE FOR NAVIGATION & THEME
+  const [activeView, setActiveView] = useState("dashboard");
+  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
 
   const [user, setUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
-
-  // MongoDB data (future use)
   const [preferences, setPreferences] = useState<UserPreferences | null>(null);
   const [lessons, setLessons] = useState<RecommendedLesson[]>([]);
-  const [loadingData, setLoadingData] = useState(false); // 
-
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
-  // Fetch user from Express (JWT)
- useEffect(() => {
-  const token = localStorage.getItem("token");
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) { navigate("/auth"); return; }
 
-  if (!token) {
-    navigate("/auth");
-    return;
-  }
-
-  const fetchUser = async () => {
-    try {
-      const res = await api.get("/users/profile");
-      const userData = res.data.user;
-
-      setUser(userData);
-
-      // Handle learningProfile from MongoDB
-      if (userData.learningProfile) {
-        setPreferences({
-          skill_track: userData.learningProfile.skillTrack,
-          experience_level: userData.learningProfile.experienceLevel,
-          persona_type: userData.learningProfile.persona,
-          starting_stage: userData.learningProfile.experienceLevel,
-          lesson_length: userData.learningProfile.commitmentTime,
-          content_priority: "Mixed",
-          project_recommendation: "",
-          commitment_time: userData.learningProfile.commitmentTime,
-          learning_goal: userData.learningProfile.learningGoal,
-          learning_style: userData.learningProfile.learningStyle,
-        });
+    const fetchUser = async () => {
+      try {
+        const res = await api.get("/users/profile");
+        const userData = res.data.user;
+        setUser(userData);
+        if (userData.learningProfile) {
+          setPreferences({
+            skill_track: userData.learningProfile.skillTrack,
+            experience_level: userData.learningProfile.experienceLevel,
+            persona_type: userData.learningProfile.persona,
+            starting_stage: userData.learningProfile.experienceLevel,
+            lesson_length: userData.learningProfile.commitmentTime,
+            content_priority: "Mixed",
+            project_recommendation: "",
+            commitment_time: userData.learningProfile.commitmentTime,
+            learning_goal: userData.learningProfile.learningGoal,
+            learning_style: userData.learningProfile.learningStyle,
+          });
+        }
+        if (userData.recommendedLessons) setLessons(userData.recommendedLessons);
+      } catch (error) {
+        localStorage.removeItem("token");
+        navigate("/auth");
+      } finally {
+        setIsLoading(false);
       }
+    };
+    fetchUser();
+  }, [navigate]);
 
-      // If you later create lessons in MongoDB
-      if (userData.recommendedLessons) {
-        setLessons(userData.recommendedLessons);
-      }
-
-    } catch (error) {
-      localStorage.removeItem("token");
-      navigate("/auth");
-    } finally {
-      setIsLoading(false);
-      setLoadingData(false);
-    }
-  };
-
-  fetchUser();
-}, [navigate]);
-
-
-  //Logout
   const handleSignOut = () => {
     localStorage.removeItem("token");
     navigate("/auth");
   };
 
-  // Loading state
-  if (isLoading || loadingData) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <motion.div
-          className="w-16 h-16 rounded-full bg-gradient-primary"
-          animate={{ rotate: 360, scale: [1, 1.1, 1] }}
-          transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-        />
+        <motion.div className="w-16 h-16 rounded-full bg-primary" animate={{ rotate: 360 }} transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }} />
       </div>
     );
   }
 
-  // User info from MongoDB
-  const userName =
-    user?.name ||
-    user?.username ||
-    user?.email?.split("@")[0] ||
-    "Learner";
-
+  const userName = user?.name || user?.username || "Learner";
   const userEmail = user?.email || "";
-
   const completedLessons = lessons.filter(l => l.is_completed).length;
-  const inProgressLessons = lessons.filter(l => !l.is_completed).length;
-
-  const currentStageNum =
-    preferences?.starting_stage?.includes("Beginner")
-      ? 1
-      : preferences?.starting_stage?.includes("Basic")
-      ? 2
-      : 3;
 
   return (
-    <div className="min-h-screen relative bg-background">
+    <div className={`min-h-screen relative transition-colors duration-300 ${isDarkMode ? "bg-background text-white" : "bg-slate-50 text-slate-900"}`}>
       <ParticlesBackground />
 
-      {/* Top Navigation */}
       <DashboardTopNav
         userName={userName}
         userEmail={userEmail}
@@ -155,101 +122,132 @@ const Dashboard = () => {
         onMenuToggle={() => setSidebarOpen(!sidebarOpen)}
       />
 
-      {/* Sidebar */}
+      {/* 2. SIDEBAR NOW DRIVES THE VIEW */}
       <DashboardSidebar
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
         isCollapsed={sidebarCollapsed}
         onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+        activeView={activeView}
+        onViewChange={(view: string) => setActiveView(view)} 
       />
 
-      {/* Main Content */}
-      <main
-        className={`relative z-10 pt-24 pb-24 lg:pb-8 transition-all duration-300 ${
-          sidebarCollapsed ? "lg:pl-24" : "lg:pl-72"
-        }`}
-      >
+      <main className={`relative z-10 pt-24 pb-24 transition-all duration-300 ${sidebarCollapsed ? "lg:pl-24" : "lg:pl-72"}`}>
         <div className="max-w-7xl mx-auto px-4 md:px-6">
-          <WelcomeSection
-            userName={userName}
-            personaType={preferences?.persona_type}
-          />
+          
+          <AnimatePresence mode="wait">
+            {/* --- DASHBOARD VIEW --- */}
+            {activeView === "dashboard" && (
+              <motion.div key="dash" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                <WelcomeSection userName={userName} personaType={preferences?.persona_type} />
+                <div className="space-y-8 mt-6">
+                  <StatsGrid inProgress={lessons.length - completedLessons} completed={completedLessons} dailyGoal={preferences?.lesson_length || "1h"} learningStyle={preferences?.learning_style || "Visual"} />
+                  <ProgressHeroCard stage={preferences?.starting_stage || "Beginner"} progressPercent={Math.round((completedLessons / (lessons.length || 1)) * 100)} totalLessons={lessons.length} completedLessons={completedLessons} />
+                  <div className="grid lg:grid-cols-2 gap-8">
+                    <RoadmapSnapshot currentStage={1} />
+                    <SkillGrowthChart />
+                  </div>
+                </div>
+              </motion.div>
+            )}
 
-          {/* No preferences yet */}
-          {!preferences && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-8"
-            >
-              <GlassCard variant="elevated" className="p-8 text-center">
-                <Sparkles className="w-12 h-12 text-primary mx-auto mb-4" />
-                <h2 className="text-xl font-semibold mb-2">
-                  Complete Your Profile
-                </h2>
-                <p className="text-muted-foreground mb-6">
-                  Take a quick quiz to personalize your learning experience
-                </p>
-                <GlassButton
-                  variant="primary"
-                  glow
-                  onClick={() => navigate("/register")}
-                >
-                  Start Personalization <ArrowRight className="w-5 h-5" />
-                </GlassButton>
-              </GlassCard>
-            </motion.div>
-          )}
+            {/* --- PROJECTS VIEW --- */}
+            {activeView === "projects" && (
+              <motion.div key="proj" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-6">
+                <h2 className="text-3xl font-bold">My Projects</h2>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <GlassCard className="p-6">
+                    <h3 className="text-xl font-bold mb-2">Portfolio Build</h3>
+                    <p className="text-muted-foreground mb-4">Applying {preferences?.skill_track} concepts.</p>
+                    <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                      <div className="bg-primary h-full w-1/3" />
+                    </div>
+                  </GlassCard>
+                </div>
+              </motion.div>
+            )}
 
-          {preferences && (
-            <>
-              <StatsGrid
-                inProgress={inProgressLessons}
-                completed={completedLessons}
-                dailyGoal={preferences.lesson_length?.split(" ")[0] || "1h"}
-                learningStyle={preferences.content_priority || "Mixed"}
-              />
+            {/* --- LESSONS / QUIZZES VIEW --- */}
+            {activeView === "lessons" && (
+              <motion.div key="quiz" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-6">
+                <h2 className="text-3xl font-bold">Quizzes & Grades</h2>
+                <GlassCard className="overflow-hidden">
+                  <table className="w-full text-left">
+                    <thead className="bg-white/5 border-b border-white/10">
+                      <tr><th className="p-4">Lesson</th><th className="p-4">Score</th><th className="p-4">Status</th></tr>
+                    </thead>
+                    <tbody>
+                      {lessons.map(l => (
+                        <tr key={l.id} className="border-b border-white/5">
+                          <td className="p-4">{l.lesson_title}</td>
+                          <td className="p-4 font-mono text-primary">{l.is_completed ? "94%" : "--"}</td>
+                          <td className="p-4">{l.is_completed ? <CheckCircle2 className="text-green-500" /> : "Pending"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </GlassCard>
+              </motion.div>
+            )}
 
-              <ProgressHeroCard
-                stage={preferences.starting_stage || "Getting Started"}
-                progressPercent={
-                  completedLessons > 0
-                    ? Math.round(
-                        (completedLessons / lessons.length) * 100
-                      )
-                    : 15
-                }
-                totalLessons={lessons.length || 10}
-                completedLessons={completedLessons}
-              />
+            {/* --- ENHANCED SETTINGS VIEW --- */}
+            {activeView === "settings" && (
+              <motion.div key="sett" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="max-w-3xl space-y-8">
+                <h2 className="text-3xl font-bold">Settings</h2>
+                
+                {/* Appearance Section */}
+                <section className="space-y-4">
+                  <h3 className="text-lg font-semibold flex items-center gap-2"><Monitor size={20} className="text-primary"/> Appearance</h3>
+                  <GlassCard className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium">Dark Mode</p>
+                        <p className="text-sm text-muted-foreground">Adjust the interface theme</p>
+                      </div>
+                      <button 
+                        onClick={() => setIsDarkMode(!isDarkMode)}
+                        className={`w-14 h-7 rounded-full p-1 transition-colors ${isDarkMode ? "bg-primary" : "bg-slate-300"}`}
+                      >
+                        <div className={`w-5 h-5 bg-white rounded-full transition-transform ${isDarkMode ? "translate-x-7" : "translate-x-0"} flex items-center justify-center`}>
+                          {isDarkMode ? <Moon size={12} className="text-primary"/> : <Sun size={12} className="text-orange-500"/>}
+                        </div>
+                      </button>
+                    </div>
+                  </GlassCard>
+                </section>
 
-              {lessons.length > 0 && (
-                <ContinueLearningCard
-                  lessonTitle={lessons[0].lesson_title}
-                  lessonCategory={lessons[0].lesson_category}
-                  duration={preferences.lesson_length || "30 min"}
-                  progress={lessons[0].is_completed ? 100 : 0}
-                  matchScore={lessons[0].match_score}
-                />
-              )}
+                {/* Notifications Section */}
+                <section className="space-y-4">
+                  <h3 className="text-lg font-semibold flex items-center gap-2"><Bell size={20} className="text-primary"/> Notifications</h3>
+                  <GlassCard className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium">Push Notifications</p>
+                        <p className="text-sm text-muted-foreground">Get alerts for lesson reminders</p>
+                      </div>
+                      <button 
+                        onClick={() => setNotificationsEnabled(!notificationsEnabled)}
+                        className={`w-14 h-7 rounded-full p-1 transition-colors ${notificationsEnabled ? "bg-primary" : "bg-slate-300"}`}
+                      >
+                         <div className={`w-5 h-5 bg-white rounded-full transition-transform ${notificationsEnabled ? "translate-x-7" : "translate-x-0"}`} />
+                      </button>
+                    </div>
+                  </GlassCard>
+                </section>
 
-              <div className="grid lg:grid-cols-2 gap-8">
-                <TodaysLearningPlan
-                  commitmentTime={preferences.commitment_time || "1 hour"}
-                  tasks={[]}
-                />
-                <RoadmapSnapshot currentStage={currentStageNum} />
-              </div>
-
-              <AIRecommendations
-                recommendations={[]}
-                learningGoal={preferences.learning_goal}
-                learningStyle={preferences.learning_style}
-              />
-
-              <SkillGrowthChart />
-            </>
-          )}
+                {/* Privacy & Safety */}
+                <section className="space-y-4">
+                  <h3 className="text-lg font-semibold flex items-center gap-2"><Shield size={20} className="text-primary"/> Account Security</h3>
+                  <GlassCard className="p-6 space-y-4">
+                    <div className="flex justify-between items-center">
+                      <p className="font-medium text-sm">Email: <span className="text-muted-foreground">{userEmail}</span></p>
+                      <GlassButton variant="secondary" className="text-xs h-8">Change Password</GlassButton>
+                    </div>
+                  </GlassCard>
+                </section>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </main>
 
