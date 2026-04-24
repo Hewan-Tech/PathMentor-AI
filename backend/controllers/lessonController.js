@@ -8,9 +8,10 @@ const createLesson = asyncHandler(async (req, res) => {
   const level = await Level.findById(req.body.levelId);
 
 if(!level){
-  return res.status(404).json({
-    message: "Level not found"
-  });
+   res.status(404);
+   throw new Error("Level not found");
+
+ 
 }
 
   const lesson = await Lesson.create({
@@ -47,11 +48,16 @@ const getLessonsByLevel = asyncHandler(async (req, res) => {
   );
 
   // 🔥 BLOCK ACCESS
+  // if (!levelProgress && level.order !== 1) {
+  //   return res.status(403).json({
+  //     message: "Level locked. Complete previous level."
+  //   });
+  // }
   if (!levelProgress && level.order !== 1) {
-    return res.status(403).json({
-      message: "Level locked. Complete previous level."
-    });
-  }
+  res.status(403);
+  throw new Error("Level locked. Complete previous level");
+}
+
 
   const lessons = await Lesson.find({ level: levelId }).sort({ order: 1 });
 

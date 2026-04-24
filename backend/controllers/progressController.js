@@ -63,8 +63,21 @@ const checkAchievements = async (userId, progress) => {
   progress.levelsProgress.forEach(lp => {
     totalCompletedLessons += lp.completedLessons.length;
   });
+ const totalLevels = progress.levelsProgress.length;
 
-  const completedLevels = progress.levelsProgress.filter(lp => lp.isCompleted).length;
+const completedLevels = progress.levelsProgress.filter(
+  lp => lp.isCompleted
+).length;
+
+if (totalLevels > 0 && completedLevels === totalLevels) {
+  await createAchievementIfNotExists(
+    userId,
+    "Course Completed",
+    "You completed a full course"
+  );
+}
+
+  // const completedLevels = progress.levelsProgress.filter(lp => lp.isCompleted).length;
   const totalXP = progress.xpEarned;
 
   // 🎯 Achievements
@@ -95,6 +108,19 @@ const checkAchievements = async (userId, progress) => {
     await createAchievementIfNotExists(userId, "XP Starter", "Earned 100 XP");
   }
 
+  const perfectScoreLevel = progress.levelsProgress.find(
+  lp => lp.score === 100
+);
+
+if (perfectScoreLevel) {
+  await createAchievementIfNotExists(
+    userId,
+    "Perfect Score",
+    "Achieved 100% in a level"
+  );
+}
+
+  
 };
 
 
@@ -112,15 +138,21 @@ const completeLesson = asyncHandler(async (req, res) => {
 
   const lesson = await Lesson.findById(lessonId);
 
-  if (!lesson) {
-    return res.status(404).json({ message: "Lesson not found" });
-  }
+  
+ if (!lesson) {
+  res.status(404);
+  throw new Error("Lesson not found");
+}
+
 
   const level = await Level.findById(lesson.level);
 
+  
   if (!level) {
-    return res.status(404).json({ message: "Level not found" });
-  }
+  res.status(404);
+  throw new Error("Level not found");
+}
+
 
   const xp = getXPForLevel(level.title);
 
@@ -200,17 +232,22 @@ const updateLevelScore = asyncHandler(async (req, res) => {
 
   const progress = await Progress.findOne({ user: userId });
 
+  
   if (!progress) {
-    return res.status(404).json({ message: "Progress not found" });
-  }
+  res.status(404);
+  throw new Error("Progress not found");
+}
+
 
   const levelProgress = progress.levelsProgress.find(lp =>
     lp.level.toString() === levelId
   );
 
-  if (!levelProgress) {
-    return res.status(404).json({ message: "Level progress not found" });
-  }
+ 
+ if (!levelProgress) {
+  res.status(404);
+  throw new Error("Level progress not found");
+}
 
   // Update score
   levelProgress.score = score;
