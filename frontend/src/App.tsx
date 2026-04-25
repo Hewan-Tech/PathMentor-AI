@@ -19,10 +19,7 @@ import MentorPendingApproval from "./pages/mentor/MentorPendingApproval";
 // Admin Pages
 import AdminLayout from "./pages/admin/AdminLayout"; 
 import AdminDashboard from "./pages/admin/AdminDashboard";
-import AdminSettings from "./pages/admin/AdminSettings";
-import AdminStudents from "./pages/admin/AdminStudents";
-import AdminMentors from "./pages/admin/AdminMentors";
-import AdminAssessments from "./pages/admin/AdminAssessments";
+
 
 import NotFound from "./pages/NotFound";
 
@@ -52,13 +49,9 @@ const App = () => (
 
           {/* ADMIN ROUTES */}
           <Route path="/admin" element={<AdminLayout />}>
+          <Route path="/admin/Dashboard" element={<AdminDashboard />} />
             <Route index element={<Navigate to="/admin/dashboard" replace />} />
-            <Route path="dashboard" element={<AdminDashboard />} />
-            <Route path="students" element={<AdminStudents />} />
-            <Route path="students/:id" element={<AdminStudents />} />
-            <Route path="mentors" element={<AdminMentors />} />
-            <Route path="assessments" element={<AdminAssessments/>} />
-            <Route path="settings" element={<AdminSettings/>} />
+           
           </Route>
 
           {/* 404 Route */}

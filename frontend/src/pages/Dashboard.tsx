@@ -9,21 +9,17 @@ import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { MobileBottomNav } from "@/components/dashboard/MobileBottomNav";
 import { WelcomeSection } from "@/components/dashboard/WelcomeSection";
 import { ProgressHeroCard } from "@/components/dashboard/ProgressHeroCard";
-import { ContinueLearningCard } from "@/components/dashboard/ContinueLearningCard";
-import { TodaysLearningPlan } from "@/components/dashboard/TodaysLearningPlan";
-import { AIRecommendations } from "@/components/dashboard/AIRecommendations";
-import { RoadmapSnapshot } from "@/components/dashboard/RoadmapSnapshot";
 import { SkillGrowthChart } from "@/components/dashboard/SkillGrowthChart";
 import { StatsGrid } from "@/components/dashboard/StatsGrid";
+import { RoadmapSnapshot } from "@/components/dashboard/RoadmapSnapshot";
 import { AIMentorOrb } from "@/components/dashboard/AIMentorOrb";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { GlassButton } from "@/components/ui/GlassButton";
 import { 
   ArrowRight, Sparkles, CheckCircle2, Moon, Sun, 
-  Bell, Shield, Monitor, Smartphone 
+  Bell, Shield, Monitor, PlayCircle, BookOpen, Clock, Star
 } from "lucide-react";
 
-// Types stay the same
 interface UserPreferences {
   skill_track: string;
   experience_level: string;
@@ -47,12 +43,9 @@ interface RecommendedLesson {
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  
-  // 1. STATE FOR NAVIGATION & THEME
   const [activeView, setActiveView] = useState("dashboard");
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-
   const [user, setUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [preferences, setPreferences] = useState<UserPreferences | null>(null);
@@ -99,50 +92,48 @@ const Dashboard = () => {
     navigate("/auth");
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <motion.div className="w-16 h-16 rounded-full bg-primary" animate={{ rotate: 360 }} transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }} />
-      </div>
-    );
-  }
+  if (isLoading) return <div className="min-h-screen bg-background" />;
 
   const userName = user?.name || user?.username || "Learner";
   const userEmail = user?.email || "";
-  const completedLessons = lessons.filter(l => l.is_completed).length;
+  const completedLessonsCount = lessons.filter(l => l.is_completed).length;
+  
+  // LOGIC FOR CATEGORIZED LISTS
+  // 1. "Undergoing": The first lesson that isn't finished
+  const currentLesson = lessons.find(l => !l.is_completed);
+  
+  // 2. "New": All other lessons that aren't finished and aren't the current active one
+  const newLessons = lessons.filter(l => !l.is_completed && l.id !== currentLesson?.id);
+  
+  // 3. "Finished": History
+  const finishedLessons = lessons.filter(l => l.is_completed);
 
   return (
-    <div className={`min-h-screen relative transition-colors duration-300 ${isDarkMode ? "bg-background text-white" : "bg-slate-50 text-slate-900"}`}>
+    <div className={`min-h-screen relative ${isDarkMode ? "bg-background text-white" : "bg-slate-50 text-slate-900"}`}>
       <ParticlesBackground />
-
-      <DashboardTopNav
-        userName={userName}
-        userEmail={userEmail}
-        onSignOut={handleSignOut}
-        onMenuToggle={() => setSidebarOpen(!sidebarOpen)}
-      />
-
-      {/* 2. SIDEBAR NOW DRIVES THE VIEW */}
+      <DashboardTopNav userName={userName} userEmail={userEmail} onSignOut={handleSignOut} onMenuToggle={() => setSidebarOpen(!sidebarOpen)} />
+      
       <DashboardSidebar
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
         isCollapsed={sidebarCollapsed}
         onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
         activeView={activeView}
-        onViewChange={(view: string) => setActiveView(view)} 
+        onViewChange={setActiveView}
+        pendingMode={user?.status === 'pending'}
       />
 
       <main className={`relative z-10 pt-24 pb-24 transition-all duration-300 ${sidebarCollapsed ? "lg:pl-24" : "lg:pl-72"}`}>
         <div className="max-w-7xl mx-auto px-4 md:px-6">
-          
           <AnimatePresence mode="wait">
+            
             {/* --- DASHBOARD VIEW --- */}
             {activeView === "dashboard" && (
-              <motion.div key="dash" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <motion.div key="dash" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
                 <WelcomeSection userName={userName} personaType={preferences?.persona_type} />
                 <div className="space-y-8 mt-6">
-                  <StatsGrid inProgress={lessons.length - completedLessons} completed={completedLessons} dailyGoal={preferences?.lesson_length || "1h"} learningStyle={preferences?.learning_style || "Visual"} />
-                  <ProgressHeroCard stage={preferences?.starting_stage || "Beginner"} progressPercent={Math.round((completedLessons / (lessons.length || 1)) * 100)} totalLessons={lessons.length} completedLessons={completedLessons} />
+                  <StatsGrid inProgress={lessons.length - completedLessonsCount} completed={completedLessonsCount} dailyGoal={preferences?.lesson_length || "1h"} learningStyle={preferences?.learning_style || "Visual"} />
+                  <ProgressHeroCard stage={preferences?.starting_stage || "Beginner"} progressPercent={Math.round((completedLessonsCount / (lessons.length || 1)) * 100)} totalLessons={lessons.length} completedLessons={completedLessonsCount} />
                   <div className="grid lg:grid-cols-2 gap-8">
                     <RoadmapSnapshot currentStage={1} />
                     <SkillGrowthChart />
@@ -151,51 +142,102 @@ const Dashboard = () => {
               </motion.div>
             )}
 
-            {/* --- PROJECTS VIEW --- */}
-            {activeView === "projects" && (
-              <motion.div key="proj" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-6">
-                <h2 className="text-3xl font-bold">My Projects</h2>
-                <div className="grid md:grid-cols-2 gap-6">
-                  <GlassCard className="p-6">
-                    <h3 className="text-xl font-bold mb-2">Portfolio Build</h3>
-                    <p className="text-muted-foreground mb-4">Applying {preferences?.skill_track} concepts.</p>
-                    <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-                      <div className="bg-primary h-full w-1/3" />
-                    </div>
-                  </GlassCard>
+            {/* --- MY COURSES VIEW --- */}
+            {activeView === "courses" && (
+              <motion.div key="courses" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-10">
+                <h2 className="text-4xl font-bold">My Learning Path</h2>
+
+                {/* 1. SECTION: UNDERGOING (Ongoing) */}
+                <div className="space-y-4">
+                  <h3 className="text-primary text-xs font-bold uppercase tracking-widest flex items-center gap-2">
+                    <PlayCircle size={16} className="animate-pulse" /> Undergoing Module
+                  </h3>
+                  {currentLesson ? (
+                    <GlassCard className="p-8 border-primary/20 relative overflow-hidden group">
+                      <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+                        <BookOpen size={160} />
+                      </div>
+                      <div className="relative z-10 space-y-4">
+                        <h3 className="text-3xl font-bold">{currentLesson.lesson_title}</h3>
+                        <p className="text-muted-foreground max-w-xl">
+                          Continue your journey in <strong>{currentLesson.lesson_category}</strong>. 
+                          This module is optimized for your {preferences?.learning_style} learning style.
+                        </p>
+                        <GlassButton className="px-8 py-6 text-lg group bg-primary text-black border-none hover:bg-primary/90">
+                          Resume Learning <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
+                        </GlassButton>
+                      </div>
+                    </GlassCard>
+                  ) : (
+                    <GlassCard className="p-8 text-center text-muted-foreground border-dashed">
+                      No active courses. Start a new module below!
+                    </GlassCard>
+                  )}
                 </div>
-              </motion.div>
-            )}
 
-            {/* --- LESSONS / QUIZZES VIEW --- */}
-            {activeView === "lessons" && (
-              <motion.div key="quiz" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-6">
-                <h2 className="text-3xl font-bold">Quizzes & Grades</h2>
-                <GlassCard className="overflow-hidden">
-                  <table className="w-full text-left">
-                    <thead className="bg-white/5 border-b border-white/10">
-                      <tr><th className="p-4">Lesson</th><th className="p-4">Score</th><th className="p-4">Status</th></tr>
-                    </thead>
-                    <tbody>
-                      {lessons.map(l => (
-                        <tr key={l.id} className="border-b border-white/5">
-                          <td className="p-4">{l.lesson_title}</td>
-                          <td className="p-4 font-mono text-primary">{l.is_completed ? "94%" : "--"}</td>
-                          <td className="p-4">{l.is_completed ? <CheckCircle2 className="text-green-500" /> : "Pending"}</td>
-                        </tr>
+                {/* 2. SECTION: NEW FOR YOU */}
+                <div className="space-y-4">
+                  <h3 className="text-white/70 text-xs font-bold uppercase tracking-widest flex items-center gap-2">
+                    <Sparkles size={16} /> New for You
+                  </h3>
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {newLessons.length > 0 ? (
+                      newLessons.map((lesson) => (
+                        <GlassCard key={lesson.id} className="p-6 hover:border-white/20 transition-all flex flex-col justify-between group">
+                          <div>
+                            <div className="flex justify-between items-start mb-4">
+                              <div className="bg-white/5 p-2 rounded-lg">
+                                <BookOpen size={18} className="text-primary/60" />
+                              </div>
+                              <span className="text-[10px] font-bold px-2 py-1 rounded bg-primary/10 text-primary">NEW</span>
+                            </div>
+                            <h4 className="text-lg font-bold mb-1 group-hover:text-primary transition-colors">{lesson.lesson_title}</h4>
+                            <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{lesson.lesson_category}</p>
+                          </div>
+                          <div className="flex justify-between items-center pt-4 border-t border-white/5">
+                            <span className="text-xs font-mono text-primary/60">{lesson.match_score}% AI Match</span>
+                            <button className="text-sm font-bold flex items-center gap-1 text-white hover:text-primary transition-colors">
+                              Start Module <ArrowRight size={14} />
+                            </button>
+                          </div>
+                        </GlassCard>
+                      ))
+                    ) : (
+                      <p className="text-muted-foreground text-sm col-span-full italic">No new modules available in this track yet.</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* 3. SECTION: COMPLETED (HISTORY) */}
+                {finishedLessons.length > 0 && (
+                   <div className="space-y-4 opacity-60">
+                    <h3 className="text-white/40 text-xs font-bold uppercase tracking-widest">Recently Completed</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      {finishedLessons.map(lesson => (
+                        <GlassCard key={lesson.id} className="p-4 flex items-center justify-between group hover:opacity-100 transition-opacity">
+                          <span className="text-sm font-medium truncate mr-2">{lesson.lesson_title}</span>
+                          <CheckCircle2 size={16} className="text-green-500 flex-shrink-0" />
+                        </GlassCard>
                       ))}
-                    </tbody>
-                  </table>
-                </GlassCard>
+                    </div>
+                  </div>
+                )}
               </motion.div>
             )}
 
-            {/* --- ENHANCED SETTINGS VIEW --- */}
+            {/* --- PROGRESS VIEW --- */}
+            {activeView === "progress" && (
+              <motion.div key="progress" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                 <h2 className="text-3xl font-bold mb-6">Learning Progress</h2>
+                 <SkillGrowthChart />
+              </motion.div>
+            )}
+
+            {/* --- SETTINGS VIEW (UNTOUCHED) --- */}
             {activeView === "settings" && (
               <motion.div key="sett" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="max-w-3xl space-y-8">
                 <h2 className="text-3xl font-bold">Settings</h2>
                 
-                {/* Appearance Section */}
                 <section className="space-y-4">
                   <h3 className="text-lg font-semibold flex items-center gap-2"><Monitor size={20} className="text-primary"/> Appearance</h3>
                   <GlassCard className="p-6">
@@ -206,7 +248,7 @@ const Dashboard = () => {
                       </div>
                       <button 
                         onClick={() => setIsDarkMode(!isDarkMode)}
-                        className={`w-14 h-7 rounded-full p-1 transition-colors ${isDarkMode ? "bg-primary" : "bg-lightblue-100"}`}
+                        className={`w-14 h-7 rounded-full p-1 transition-colors ${isDarkMode ? "bg-primary" : "bg-slate-400"}`}
                       >
                         <div className={`w-5 h-5 bg-white rounded-full transition-transform ${isDarkMode ? "translate-x-7" : "translate-x-0"} flex items-center justify-center`}>
                           {isDarkMode ? <Moon size={12} className="text-primary"/> : <Sun size={12} className="text-orange-500"/>}
@@ -216,7 +258,6 @@ const Dashboard = () => {
                   </GlassCard>
                 </section>
 
-                {/* Notifications Section */}
                 <section className="space-y-4">
                   <h3 className="text-lg font-semibold flex items-center gap-2"><Bell size={20} className="text-primary"/> Notifications</h3>
                   <GlassCard className="p-6">
@@ -235,7 +276,6 @@ const Dashboard = () => {
                   </GlassCard>
                 </section>
 
-                {/* Privacy & Safety */}
                 <section className="space-y-4">
                   <h3 className="text-lg font-semibold flex items-center gap-2"><Shield size={20} className="text-primary"/> Account Security</h3>
                   <GlassCard className="p-6 space-y-4">
@@ -247,6 +287,7 @@ const Dashboard = () => {
                 </section>
               </motion.div>
             )}
+
           </AnimatePresence>
         </div>
       </main>
