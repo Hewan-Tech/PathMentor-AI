@@ -136,12 +136,6 @@ export const DashboardTopNav = ({
                   <p className="text-sm font-medium">{userName}</p>
                   <p className="text-xs text-muted-foreground truncate">{userEmail}</p>
                 </div>
-                <DropdownMenuSeparator className="bg-white/10" />
-                <DropdownMenuItem asChild>
-                  <Link to="/dashboard" className="cursor-pointer flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-teal" /> Dashboard
-                  </Link>
-                </DropdownMenuItem>
                 
                 <DropdownMenuSeparator className="bg-white/10" />
                 

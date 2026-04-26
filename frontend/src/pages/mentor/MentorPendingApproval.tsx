@@ -1,135 +1,392 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { 
-  Clock, 
-  CheckCircle2, 
-  AlertCircle, 
-  ArrowRight, 
-  ShieldCheck, 
-  RefreshCcw,
-  ExternalLink
-} from "lucide-react";
+import api from "@/services/api";
+import { DashboardTopNav } from "@/components/dashboard/DashboardTopNav";
+import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { ParticlesBackground } from "@/components/landing/ParticlesBackground";
-import { toast } from "sonner";
+import { motion } from "framer-motion";
+import {
+  ShieldCheck,
+  Clock3,
+  CheckCircle2,
+  XCircle,
+  FileText,
+  BadgeCheck,
+  Mail,
+  User,
+  Briefcase,
+  CalendarDays,
+  RefreshCcw,
+  LogOut,
+} from "lucide-react";
 
-const MentorPendingApproval = () => {
+const MentorPendingDashboard = () => {
   const navigate = useNavigate();
-  const [status, setStatus] = useState<'pending' | 'reviewing' | 'approved'>('pending');
-  const [loading, setLoading] = useState(true); // Keep this
+
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  const [mentor, setMentor] = useState<any>(null);
 
   useEffect(() => {
-    // 1. Check current status immediately on load
-    const userStr = localStorage.getItem("user");
-    if (userStr) {
-      const user = JSON.parse(userStr);
-      if (user.status === "approved") {
-        navigate("/mentor/MentordDashboard");
-        return;
-      }
-      // If they are pending, update local state to match their actual status
-      if (user.status) setStatus(user.status);
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      navigate("/auth");
+      return;
     }
 
-    // 2. STOP LOADING so the page actually shows
-    setLoading(false);
+    try {
+      const res = await api.get("/users/profile");
+      const user = res.data.user;
 
-    // 3. Keep your "Magic" storage listener for real-time updates from other tabs
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === "user") {
-        const updatedUser = JSON.parse(e.newValue || "{}");
-        if (updatedUser.status === "approved") {
-          toast.success("Identity Verified. Accessing Nexus...");
-          setTimeout(() => navigate("/mentor/MentordDashboard"), 1500);
-        }
+      if (user.role !== "mentor") {
+        navigate("/dashboard");
+        return;
       }
+
+      // If approved go to real mentor dashboard
+      if (user.approvalStatus === "approved") {
+        navigate("/mentor/dashboard");
+        return;
+      }
+
+      setMentor(user);
+    } catch (error) {
+      navigate("/auth");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const logout = () => {
+    localStorage.removeItem("token");
+    navigate("/auth");
+  };
+
+  const getStatusUI = () => {
+    if (mentor?.approvalStatus === "approved") {
+      return {
+        text: "Approved",
+        color: "text-emerald-400",
+        bg: "bg-emerald-400/10",
+        icon: <CheckCircle2 size={18} />,
+      };
+    }
+
+    if (mentor?.approvalStatus === "rejected") {
+      return {
+        text: "Rejected",
+        color: "text-red-400",
+        bg: "bg-red-400/10",
+        icon: <XCircle size={18} />,
+      };
+    }
+
+    return {
+      text: "Pending Review",
+      color: "text-[#33b6ff]",
+      bg: "bg-[#33b6ff]/10",
+      icon: <Clock3 size={18} />,
     };
+  };
 
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
-  }, [navigate]);
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#020617] flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-[#33b6ff]/20 border-t-[#33b6ff] rounded-full animate-spin" />
+      </div>
+    );
+  }
 
-  if (loading) return null; 
+  const status = getStatusUI();
 
   return (
-    <div className="min-h-screen relative bg-[#020617] text-slate-200 overflow-hidden font-sans">
-      <div className="fixed inset-0 pointer-events-none z-0">
+    <div className="min-h-screen bg-[#020617] text-white relative overflow-hidden">
+      {/* Background */}
+      <div className="fixed inset-0 inset-0 z-0 pointer-events-none">
         <ParticlesBackground />
-        <div className="absolute top-[-10%] left-[-10%] w-[800px] h-[800px] bg-[#33b6ff]/10 rounded-full blur-[150px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[800px] h-[800px] bg-[#a855f7]/10 rounded-full blur-[150px]" />
+
+        <div className="absolute top-[-10%] left-[-10%] w-[700px] h-[700px] bg-[#33b6ff]/10 rounded-full blur-[180px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[700px] h-[700px] bg-[#a855f7]/10 rounded-full blur-[180px]" />
       </div>
 
-      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen p-6">
-        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-[#33b6ff] text-[10px] font-black uppercase tracking-[0.3em] mb-6">
-            <ShieldCheck size={14} /> Verification Node
-          </div>
-          <h1 className="text-6xl font-black tracking-tighter bg-gradient-to-b from-white to-slate-500 bg-clip-text text-transparent">
-            Mentor <span className="text-[#33b6ff]">Status</span>
-          </h1>
-        </motion.div>
+      {/* Top Nav */}
+      <DashboardTopNav
+        userName={mentor?.name || "Mentor"}
+        userEmail={mentor?.email || "mentor@email.com"}
+        onMenuToggle={() => setSidebarOpen(!sidebarOpen)}
+        onSignOut={logout}
+      />
 
-        <div className="w-full max-w-5xl grid md:grid-cols-5 gap-8">
-          {/* LEFT: FLOW SEQUENCE */}
-          <div className="md:col-span-2 space-y-4">
-            <div className="bg-white/[0.07] backdrop-blur-3xl border border-white/20 p-8 rounded-[32px] h-full shadow-2xl">
-              <h3 className="text-sm font-black uppercase tracking-widest text-slate-500 mb-10 flex items-center gap-2">
-                <Clock size={16} className="text-[#33b6ff]" /> Flow Sequence
-              </h3>
-              <div className="space-y-10 relative">
-                <div className="absolute left-[11px] top-2 bottom-2 w-[1px] bg-white/10" />
-                <Step label="Submission" sub="Account Created" done={true} />
-                <Step label="Neural Audit" sub="Awaiting Admin" active={status !== 'approved'} done={status === 'approved'} />
-                <Step label="Portal Unlock" sub="Full access" active={status === 'approved'} done={status === 'approved'} />
-              </div>
-            </div>
-          </div>
+      {/* Sidebar */}
+      <DashboardSidebar
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        isCollapsed={sidebarCollapsed}
+        onToggleCollapse={() =>
+          setSidebarCollapsed(!sidebarCollapsed)
+        }
+      />
 
-          {/* RIGHT: STATUS CARD */}
-          <div className="md:col-span-3">
-            <div className="bg-white/[0.1] backdrop-blur-3xl border border-white/20 p-10 rounded-[40px] shadow-2xl text-center">
-              <div className="mb-8 flex justify-center">
-                <div className="p-6 rounded-full bg-[#33b6ff]/10 text-[#33b6ff] animate-pulse">
-                   <RefreshCcw size={40} />
-                </div>
-              </div>
-              <h3 className="text-2xl font-black tracking-tight mb-2">Manual Audit in Progress</h3>
-              <p className="text-slate-400 text-sm mb-8 px-6 leading-relaxed">
-                Our administrators are currently reviewing your credentials. Once approved, this page will update automatically.
+      {/* Main */}
+      <main
+        className={`relative z-10 pt-28 pb-16 transition-all duration-500 ${
+          sidebarCollapsed ? "lg:pl-28" : "lg:pl-80"
+        }`}
+      >
+        <div className="max-w-7xl mx-auto px-6 space-y-8">
+          {/* Header */}
+          <motion.div
+            initial={{ opacity: 0, y: 25 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-col md:flex-row md:items-end justify-between gap-6"
+          >
+            <div>
+              <h1 className="text-5xl font-extrabold tracking-tight">
+                Mentor <span className="text-[#33b6ff]">Approval</span>
+              </h1>
+
+              <p className="text-slate-400 mt-3 uppercase tracking-widest text-xs font-bold">
+                Submitted Application Dashboard
               </p>
-              
-              <div className="p-4 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between text-left">
-                <div>
-                   <p className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Network Status</p>
-                   <p className="text-sm font-bold text-[#33b6ff]">Synchronizing with Admin Node...</p>
+            </div>
+
+            <button
+              onClick={loadData}
+              className="px-5 py-3 rounded-xl bg-[#33b6ff] text-black font-bold flex items-center gap-2 hover:shadow-[0_0_25px_rgba(51,182,255,0.45)]"
+            >
+              <RefreshCcw size={16} />
+              Refresh Status
+            </button>
+          </motion.div>
+
+          {/* Status Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 25 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="rounded-3xl border border-white/10 bg-white/[0.06] backdrop-blur-2xl p-8"
+          >
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
+              <div className="flex items-center gap-5">
+                <div className="w-20 h-20 rounded-3xl bg-gradient-to-tr from-[#33b6ff] to-[#a855f7] p-[2px]">
+                  <div className="w-full h-full rounded-3xl bg-[#020617] flex items-center justify-center">
+                    <ShieldCheck className="text-[#33b6ff]" size={34} />
+                  </div>
                 </div>
-                <div className="flex gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#33b6ff] animate-bounce" />
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#33b6ff] animate-bounce [animation-delay:0.2s]" />
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#33b6ff] animate-bounce [animation-delay:0.4s]" />
+
+                <div>
+                  <h3 className="text-2xl font-bold">
+                    Application Status
+                  </h3>
+
+                  <div
+                    className={`mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-full ${status.bg} ${status.color} font-semibold text-sm`}
+                  >
+                    {status.icon}
+                    {status.text}
+                  </div>
                 </div>
               </div>
+
+              <p className="text-slate-400 max-w-md text-sm">
+                Your mentor profile is being reviewed by the
+                admin team. You’ll gain dashboard access once
+                approved.
+              </p>
             </div>
+          </motion.div>
+
+          {/* Grid */}
+          <div className="grid lg:grid-cols-3 gap-8">
+            {/* Submitted Data */}
+            <motion.div
+              initial={{ opacity: 0, y: 25 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 }}
+              className="lg:col-span-2 rounded-3xl border border-white/10 bg-white/[0.06] backdrop-blur-2xl p-8"
+            >
+              <h3 className="text-2xl font-bold mb-8">
+                Submitted Information
+              </h3>
+
+              <div className="grid md:grid-cols-2 gap-5">
+                <InfoCard
+                  icon={<User size={18} />}
+                  title="Full Name"
+                  value={mentor?.name || "Not Provided"}
+                />
+
+                <InfoCard
+                  icon={<Mail size={18} />}
+                  title="Email"
+                  value={mentor?.email || "Not Provided"}
+                />
+
+                <InfoCard
+                  icon={<Briefcase size={18} />}
+                  title="Expertise"
+                  value={mentor?.expertise || "Software Engineering"}
+                />
+
+                <InfoCard
+                  icon={<BadgeCheck size={18} />}
+                  title="Experience"
+                  value={
+                    mentor?.experience || "3+ Years Experience"
+                  }
+                />
+
+                <InfoCard
+                  icon={<CalendarDays size={18} />}
+                  title="Submitted Date"
+                  value={
+                    mentor?.createdAt
+                      ? new Date(
+                          mentor.createdAt
+                        ).toLocaleDateString()
+                      : "Today"
+                  }
+                />
+
+                <InfoCard
+                  icon={<FileText size={18} />}
+                  title="Documents"
+                  value="CV + Certificates Uploaded"
+                />
+              </div>
+
+              {/* Bio */}
+              <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.04] p-5">
+                <p className="text-sm text-slate-400 uppercase tracking-widest font-bold mb-2">
+                  Professional Bio
+                </p>
+
+                <p className="text-slate-200 leading-relaxed">
+                  {mentor?.bio ||
+                    "Experienced mentor passionate about guiding students in career growth, coding skills and professional development."}
+                </p>
+              </div>
+            </motion.div>
+
+            {/* Right Side */}
+            <motion.div
+              initial={{ opacity: 0, y: 25 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="space-y-6"
+            >
+              {/* Timeline */}
+              <div className="rounded-3xl border border-white/10 bg-white/[0.06] backdrop-blur-2xl p-7">
+                <h3 className="text-xl font-bold mb-6">
+                  Approval Progress
+                </h3>
+
+                <div className="space-y-5">
+                  <Step
+                    done
+                    title="Application Submitted"
+                  />
+                  <Step
+                    done
+                    title="Profile Received"
+                  />
+                  <Step
+                    active
+                    title="Admin Reviewing"
+                  />
+                  <Step
+                    title="Approval Granted"
+                  />
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="rounded-3xl border border-white/10 bg-white/[0.06] backdrop-blur-2xl p-7 space-y-4">
+                <button
+                  onClick={loadData}
+                  className="w-full px-4 py-3 rounded-xl bg-[#33b6ff] text-black font-bold"
+                >
+                  Check Again
+                </button>
+
+                <button
+                  onClick={logout}
+                  className="w-full px-4 py-3 rounded-xl border border-white/10 bg-white/[0.03] flex items-center justify-center gap-2"
+                >
+                  <LogOut size={16} />
+                  Logout
+                </button>
+              </div>
+            </motion.div>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 };
 
-const Step = ({ label, sub, active, done }: any) => (
-  <div className="relative flex items-start gap-6">
-    <div className={`z-10 w-6 h-6 rounded-full flex items-center justify-center border-2 ${
-      done ? 'bg-[#33b6ff] border-[#33b6ff]' : 
-      active ? 'bg-[#020617] border-[#33b6ff] shadow-[0_0_15px_rgba(51,182,255,0.3)]' : 'bg-[#020617] border-white/10'
-    }`}>
-      {done ? <CheckCircle2 size={12} className="text-black" /> : <div className={`w-1.5 h-1.5 rounded-full ${active ? 'bg-[#33b6ff] animate-pulse' : 'bg-white/10'}`} />}
+const InfoCard = ({
+  icon,
+  title,
+  value,
+}: {
+  icon: any;
+  title: string;
+  value: string;
+}) => (
+  <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
+    <div className="flex items-center gap-2 text-[#33b6ff] mb-3">
+      {icon}
+      <span className="text-xs uppercase tracking-widest font-bold">
+        {title}
+      </span>
     </div>
-    <div>
-      <p className={`text-sm font-black tracking-tighter ${active || done ? 'text-white' : 'text-slate-600'}`}>{label}</p>
-      <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{sub}</p>
-    </div>
+
+    <p className="font-semibold text-slate-100">
+      {value}
+    </p>
   </div>
 );
 
-export default MentorPendingApproval;
+const Step = ({
+  title,
+  done,
+  active,
+}: {
+  title: string;
+  done?: boolean;
+  active?: boolean;
+}) => (
+  <div className="flex items-center gap-4">
+    <div
+      className={`w-4 h-4 rounded-full ${
+        done
+          ? "bg-emerald-400"
+          : active
+          ? "bg-[#33b6ff]"
+          : "bg-white/10"
+      }`}
+    />
+
+    <p
+      className={`font-medium ${
+        active
+          ? "text-white"
+          : done
+          ? "text-slate-200"
+          : "text-slate-500"
+      }`}
+    >
+      {title}
+    </p>
+  </div>
+);
+
+export default MentorPendingDashboard;
