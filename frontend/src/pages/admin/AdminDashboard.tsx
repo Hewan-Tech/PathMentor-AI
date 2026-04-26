@@ -9,6 +9,8 @@ import {
   Star,
   CheckCircle2,
   BookOpen,
+  Check,
+  X
 } from "lucide-react";
 
 const glass =
@@ -296,7 +298,7 @@ const AdminDashboard = () => {
 
               </table>
             </div>
-          </div>
+        
 
           <div className="relative z-10 space-y-3">
             <HealthRow
@@ -332,8 +334,8 @@ const AdminDashboard = () => {
             />
           </div>
         </div>
-      </div>
-    </div>
+      
+   
   );
 };
 
