@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Users,
   UserCheck,
@@ -22,6 +22,27 @@ const glass =
 
 const AdminDashboard = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [pendingMentors, setPendingMentors] = useState([
+    {
+      _id: "m1",
+      name: "Aisha Johnson",
+      email: "aisha.johnson@example.com",
+    },
+    {
+      _id: "m2",
+      name: "Marcus Lee",
+      email: "marcus.lee@example.com",
+    },
+    {
+      _id: "m3",
+      name: "Priya Kumar",
+      email: "priya.kumar@example.com",
+    },
+  ]);
+
+  const approveMentor = (id: string) => {
+    setPendingMentors((prev) => prev.filter((mentor) => mentor._id !== id));
+  };
 
   useEffect(() => {
     const canvas = canvasRef.current;
