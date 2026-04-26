@@ -13,7 +13,7 @@ import {
 
 const glass =
   "relative overflow-hidden rounded-2xl " +
-  "bg-white/10 backdrop-blur-3xl border border-white/20 " +
+  "bg-white/10 backdrop-blur-3xl border border-white/20 " + "bg-hero-bg.jpg" + 
   "shadow-[0_8px_32px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18),0_0_20px_rgba(34,211,238,0.12)] " +
   "before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-br before:from-white/20 before:via-white/5 before:to-transparent before:pointer-events-none " +
   "hover:border-cyan-300/30 hover:shadow-[0_8px_32px_rgba(0,0,0,0.3),0_0_25px_rgba(34,211,238,0.2)] transition-all duration-300";
@@ -125,7 +125,7 @@ const AdminDashboard = () => {
   }, []);
 
   return (
-  <div className="space-y-8 pb-10 min-h-screen p-2 relative overflow-hidden bg-[#050816]">
+    <div className="space-y-8 pb-10 min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-black p-2">
       {/* TOP */}
       <div className="grid grid-cols-4 gap-6">
         <GlassStatCard
