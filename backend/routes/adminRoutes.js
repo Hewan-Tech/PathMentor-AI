@@ -1,116 +1,181 @@
-const express = require("express");
+// const express = require("express");
+// const router = express.Router();
+// const { guard, authorize } = require("../middleware/authMiddleware");
+// const User = require("../models/User");
+
+
+
+// // controllers (USE YOUR EXISTING ONES)
+// const userCtrl = require("../controllers/userController");
+// const courseCtrl = require("../controllers/courseController");
+// const lessonCtrl = require("../controllers/lessonController");
+// const quizCtrl = require("../controllers/quizController");
+// const progressCtrl = require("../controllers/progressController");
+// const announcementCtrl = require("../controllers/announcementController");
+
+// /* ================= ADMIN DASHBOARD STATS ================= */
+
+// router.get("/dashboard", guard, authorize("admin"), async (req, res) => {
+//   try {
+//     const verifiedMentors = await User.countDocuments({
+//       role: "mentor",
+//       "mentorVerification.status": "approved",
+//     });
+
+//     const pendingMentors = await User.countDocuments({
+//       role: "mentor",
+//       "mentorVerification.status": "pending",
+//     });
+
+//     const rejectedMentors = await User.countDocuments({
+//       role: "mentor",
+//       "mentorVerification.status": "rejected",
+//     });
+
+//     const totalStudents = await User.countDocuments({
+//       role: "student",
+//     });
+//     const totalMentors= await User.countDocuments({
+//       role: "mentor"
+//     });
+
+//     res.status(200).json({
+//       verifiedMentors,
+//       pendingMentors,
+//       rejectedMentors,
+//       totalStudents,
+//       totalMentors,
+//     });
+//   } catch (error) {
+//     console.error("Admin dashboard error:", error);
+//     res.status(500).json({ message: "Server error" });
+//   }
+// });
+
+
+// router.get( "/pending-mentors",guard, authorize("admin"), async (req, res) => {
+//     try {
+//       const mentors = await User.find({
+//         role: "mentor",
+//         "mentorVerification.status": "pending",
+//       })
+//         .select(
+//           "name email mentorVerification createdAt"
+//         )
+//         .sort({ createdAt: -1 });
+
+//       res.status(200).json({
+//         success: true,
+//         count: mentors.length,
+//         mentors,
+//       });
+//     } catch (error) {
+//       console.error("Fetch pending mentors error:", error);
+//       res.status(500).json({
+//         success: false,
+//         message: "Server error",
+//       });
+//     }
+//   }
+// );
+
+// /* ================= APPROVE MENTOR ================= */
+
+// router.put("/mentor/:id/approve", guard, authorize("admin"), async (req, res) => {
+//   try {
+//     const mentor = await User.findById(req.params.id);
+
+//     if (!mentor || mentor.role !== "mentor") {
+//       return res.status(404).json({ message: "Mentor not found" });
+//     }
+
+//     mentor.mentorVerification.status = "approved";
+//     mentor.mentorVerification.reviewdBy = req.user._id;
+//     mentor.mentorVerification.reviewedAt = new Date();
+
+//     await mentor.save();
+
+//     res.status(200).json({ message: "Mentor approved successfully" });
+//   } catch (error) {
+//     res.status(500).json({ message: "Server error" });
+//   }
+// });
+
+// /* ================= REJECT MENTOR ================= */
+
+// router.put("/mentor/:id/reject", guard, authorize("admin"), async (req, res) => {
+//   try {
+//     const mentor = await User.findById(req.params.id);
+
+//     if (!mentor || mentor.role !== "mentor") {
+//       return res.status(404).json({ message: "Mentor not found" });
+//     }
+
+//     mentor.mentorVerification.status = "rejected";
+//     mentor.mentorVerification.reviewdBy = req.user._id;
+//     mentor.mentorVerification.reviewedAt = new Date();
+
+//     await mentor.save();
+
+//     res.status(200).json({ message: "Mentor rejected successfully" });
+//   } catch (error) {
+//     res.status(500).json({ message: "Server error" });
+//   }
+// });
+
+// module.exports = router;
+ const express = require("express");
 const router = express.Router();
+
 const { guard, authorize } = require("../middleware/authMiddleware");
 const User = require("../models/User");
 
-/* ================= ADMIN DASHBOARD STATS ================= */
+// controllers (USE YOUR EXISTING ONES)
+const userCtrl = require("../controllers/userController");
+const courseCtrl = require("../controllers/courseController");
+const lessonCtrl = require("../controllers/lessonController");
+const quizCtrl = require("../controllers/quizController");
+const progressCtrl = require("../controllers/progressController");
+const announcementCtrl = require("../controllers/announcementController");
 
-router.get("/dashboard", guard, authorize("admin"), async (req, res) => {
-  try {
-    const verifiedMentors = await User.countDocuments({
-      role: "mentor",
-      "mentorVerification.status": "approved",
-    });
+// ADMIN ONLY
+router.use(protect, authorize("admin"));
 
-    const pendingMentors = await User.countDocuments({
-      role: "mentor",
-      "mentorVerification.status": "pending",
-    });
+/* ================= DASHBOARD ================= */
+router.get("/dashboard", userCtrl.getDashboardStats);
 
-    const rejectedMentors = await User.countDocuments({
-      role: "mentor",
-      "mentorVerification.status": "rejected",
-    });
+/* ================= USERS ================= */
+router.get("/users", userCtrl.getAllUsers);
+router.delete("/user/:id", userCtrl.deleteUser);
+router.put("/user/:id/role", userCtrl.updateUserRole);
 
-    const totalStudents = await User.countDocuments({
-      role: "student",
-    });
-    const totalMentors= await User.countDocuments({
-      role: "mentor"
-    });
+/* ================= MENTORS ================= */
+router.get("/pending-mentors", userCtrl.getPendingMentors);
+router.put("/mentor/:id/approve", userCtrl.approveMentor);
+router.put("/mentor/:id/reject", userCtrl.rejectMentor);
 
-    res.status(200).json({
-      verifiedMentors,
-      pendingMentors,
-      rejectedMentors,
-      totalStudents,
-      totalMentors,
-    });
-  } catch (error) {
-    console.error("Admin dashboard error:", error);
-    res.status(500).json({ message: "Server error" });
-  }
-});
+/* ================= COURSES ================= */
+router.get("/courses", courseCtrl.adminGetCourses);
+router.delete("/course/:id", courseCtrl.adminDeleteCourse);
+router.put("/course/:id", courseCtrl.adminUpdateCourse);
 
+/* ================= LESSONS ================= */
+router.get("/lessons", lessonCtrl.adminGetLessons);
+router.delete("/lesson/:id", lessonCtrl.adminDeleteLesson);
 
-router.get( "/pending-mentors",guard, authorize("admin"), async (req, res) => {
-    try {
-      const mentors = await User.find({
-        role: "mentor",
-        "mentorVerification.status": "pending",
-      })
-        .select(
-          "name email mentorVerification createdAt"
-        )
-        .sort({ createdAt: -1 });
+/* ================= QUIZZES ================= */
+router.get("/quizzes", quizCtrl.adminGetQuizzes);
+router.delete("/quiz/:id", quizCtrl.adminDeleteQuiz);
 
-      res.status(200).json({
-        success: true,
-        count: mentors.length,
-        mentors,
-      });
-    } catch (error) {
-      console.error("Fetch pending mentors error:", error);
-      res.status(500).json({
-        success: false,
-        message: "Server error",
-      });
-    }
-  }
-);
+/* ================= ANALYTICS ================= */
+router.get("/analytics", progressCtrl.getPlatformAnalytics);
 
-/* ================= APPROVE MENTOR ================= */
+/* ================= LEADERBOARD ================= */
+router.get("/leaderboard", progressCtrl.getLeaderboard);
 
-router.put("/mentor/:id/approve", guard, authorize("admin"), async (req, res) => {
-  try {
-    const mentor = await User.findById(req.params.id);
-
-    if (!mentor || mentor.role !== "mentor") {
-      return res.status(404).json({ message: "Mentor not found" });
-    }
-
-    mentor.mentorVerification.status = "approved";
-    mentor.mentorVerification.reviewdBy = req.user._id;
-    mentor.mentorVerification.reviewedAt = new Date();
-
-    await mentor.save();
-
-    res.status(200).json({ message: "Mentor approved successfully" });
-  } catch (error) {
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-/* ================= REJECT MENTOR ================= */
-
-router.put("/mentor/:id/reject", guard, authorize("admin"), async (req, res) => {
-  try {
-    const mentor = await User.findById(req.params.id);
-
-    if (!mentor || mentor.role !== "mentor") {
-      return res.status(404).json({ message: "Mentor not found" });
-    }
-
-    mentor.mentorVerification.status = "rejected";
-    mentor.mentorVerification.reviewdBy = req.user._id;
-    mentor.mentorVerification.reviewedAt = new Date();
-
-    await mentor.save();
-
-    res.status(200).json({ message: "Mentor rejected successfully" });
-  } catch (error) {
-    res.status(500).json({ message: "Server error" });
-  }
-});
+/* ================= ANNOUNCEMENTS ================= */
+router.post("/announcement", announcementCtrl.createAnnouncement);
+router.delete("/announcement/:id", announcementCtrl.deleteAnnouncement);
+router.get("/announcements", announcementCtrl.getAnnouncements);
 
 module.exports = router;

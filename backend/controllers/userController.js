@@ -1,5 +1,7 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
+
+
 const getMyProfile= async (req,res) => {
         res.status(200).json({
             user: req.user
@@ -132,4 +134,52 @@ const completeProfile = async (req, res) => {
   }
 };
 
-module.exports= { getMyProfile, updateMyProfile, changePassword, completeProfile };
+// ADMIN : get all users
+const getAllUsers= async (req,res) =>{
+  const users = await User.find().select("-password");
+  res.json(users);
+
+}; 
+
+// ADMIN:  delete users
+ const deleteUser = async (req, res) => {
+   await User.findByIdAndDelete(req.params.id);
+   res.json ({ 
+     message: "User deleted"
+   });
+ }; 
+ //ADMIN: update role
+ const updateUserRole = async (req, res) =>{
+  const user = await User.findByIdAndUpdate (
+    req.params.id,
+    {role: req.body.role},
+    {new: true}
+  );
+  res.json(user);
+ }; 
+
+//Dashboard
+  const getDashboardStats = async (req, res) => {
+  const totalUsers = await User.countDocuments();
+  const mentors = await User.countDocuments({ role: "mentor" });
+  const students = await User.countDocuments({ role: "student" });
+  const pending = await User.countDocuments({ mentorStatus: "pending" });
+
+  res.json({
+    totalUsers,
+    mentors,
+    students,
+    pending
+  });
+};
+
+module.exports= { getMyProfile,
+                  updateMyProfile, 
+                  changePassword,
+                  completeProfile,
+                  getAllUsers,
+                  deleteUser,
+                  updateUserRole,
+                  getDashboardStats
+   
+ };
