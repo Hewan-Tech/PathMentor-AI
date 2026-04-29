@@ -136,10 +136,11 @@ const courseCtrl = require("../controllers/courseController");
 const lessonCtrl = require("../controllers/lessonController");
 const quizCtrl = require("../controllers/quizController");
 const progressCtrl = require("../controllers/progressController");
+const leaderboardCtrl = require("../controllers/leaderboardController");
 const announcementCtrl = require("../controllers/announcementController");
 
 // ADMIN ONLY
-router.use(protect, authorize("admin"));
+router.use(guard, authorize("admin"));
 
 /* ================= DASHBOARD ================= */
 router.get("/dashboard", userCtrl.getDashboardStats);
@@ -150,6 +151,7 @@ router.delete("/user/:id", userCtrl.deleteUser);
 router.put("/user/:id/role", userCtrl.updateUserRole);
 
 /* ================= MENTORS ================= */
+router.get("/mentors", userCtrl.getAllMentors);
 router.get("/pending-mentors", userCtrl.getPendingMentors);
 router.put("/mentor/:id/approve", userCtrl.approveMentor);
 router.put("/mentor/:id/reject", userCtrl.rejectMentor);
@@ -171,11 +173,12 @@ router.delete("/quiz/:id", quizCtrl.adminDeleteQuiz);
 router.get("/analytics", progressCtrl.getPlatformAnalytics);
 
 /* ================= LEADERBOARD ================= */
-router.get("/leaderboard", progressCtrl.getLeaderboard);
+router.get("/leaderboard", leaderboardCtrl.getLeaderboard);
 
 /* ================= ANNOUNCEMENTS ================= */
 router.post("/announcement", announcementCtrl.createAnnouncement);
 router.delete("/announcement/:id", announcementCtrl.deleteAnnouncement);
 router.get("/announcements", announcementCtrl.getAnnouncements);
+
 
 module.exports = router;

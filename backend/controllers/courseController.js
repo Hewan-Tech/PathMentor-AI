@@ -69,5 +69,32 @@ const getCourseRoadmap = asyncHandler(async (req, res) => {
 
 });
 
+const adminGetCourses = async (req, res) => {
+  const courses = await Course.find().populate("instructor");
+  res.json(courses);
+};
 
-module.exports = { createCourse, getCourseRoadmap };
+ const adminDeleteCourse = async (req, res) => {
+  await Course.findByIdAndDelete(req.params.id);
+  res.json({ message: "Course deleted" });
+};
+
+const adminUpdateCourse = async (req, res) => {
+  
+  const course = await Course.findByIdAndUpdate(
+    req.params.id,
+    req.body,
+    { new: true }
+  );
+  res.json(course);
+};
+
+
+module.exports = { createCourse, 
+                  getCourseRoadmap,
+                  adminGetCourses,
+                  adminDeleteCourse,
+                  adminUpdateCourse
+
+
+ };

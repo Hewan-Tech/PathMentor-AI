@@ -80,9 +80,34 @@ const getCourseAnnouncements = asyncHandler(async (req, res) => {
 });
 
 
+/*
+========================================
+DELETE ANNOUNCEMENT
+========================================
+*/
+const deleteAnnouncement = asyncHandler(async (req, res) => {
+
+  const announcement = await Announcement.findById(req.params.id);
+
+  if (!announcement) {
+    return res.status(404).json({
+      success: false,
+      message: "Announcement not found"
+    });
+  }
+
+  await announcement.remove();
+
+  res.json({
+    success: true,
+    message: "Announcement deleted successfully"
+  });
+
+});
 
 module.exports = {
   createAnnouncement,
   getAnnouncements,
-  getCourseAnnouncements
+  getCourseAnnouncements,
+  deleteAnnouncement
 };

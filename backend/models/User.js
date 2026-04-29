@@ -50,7 +50,7 @@ const userSchema=new mongoose.Schema(
             default: "pending"
              },
              documents: [String], //file paths, /URL
-             reviewdBy: {
+             reviewedBy: {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: "User"
              },

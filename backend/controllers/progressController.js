@@ -2,6 +2,7 @@ const Progress = require("../models/Progress");
 const Lesson = require("../models/Lesson");
 const Level = require("../models/Level");
 const Achievement = require("../models/Achievement");
+const Course = require("../models/Course");
 const asyncHandler = require("../middleware/asyncHandler");
 
 
@@ -350,7 +351,15 @@ const getUserXP = asyncHandler(async (req, res) => {
 
 });
 
+const getPlatformAnalytics = async (req, res) => {
+  const totalUsers = await User.countDocuments();
+  const totalCourses = await Course.countDocuments();
 
+  res.json({
+    totalUsers,
+    totalCourses
+  });
+};
 
 /*
 ========================================
@@ -361,5 +370,6 @@ module.exports = {
   completeLesson,
   updateLevelScore,
   getCourseProgress,
-  getUserXP
+  getUserXP,
+  getPlatformAnalytics
 };

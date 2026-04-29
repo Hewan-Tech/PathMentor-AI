@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import api from "@/services/api";
 import {
   Users,
   UserCheck,
@@ -22,27 +23,65 @@ const glass =
 
 const AdminDashboard = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [pendingMentors, setPendingMentors] = useState([
-    {
-      _id: "m1",
-      name: "Aisha Johnson",
-      email: "aisha.johnson@example.com",
-    },
-    {
-      _id: "m2",
-      name: "Marcus Lee",
-      email: "marcus.lee@example.com",
-    },
-    {
-      _id: "m3",
-      name: "Priya Kumar",
-      email: "priya.kumar@example.com",
-    },
-  ]);
+  const [pendingMentors, setPendingMentors] = useState<any[]>([]);
+  const [dashboardStats, setDashboardStats] = useState<{
+    totalUsers?: number;
+    mentors?: number;
+    students?: number;
+    pending?: number;
+    totalCourses?: number;
+    activeStudents?: number;
+    activeMentors?: number;
+    enrollmentCount?: number;
+    chartData?: { label: string; value: number }[];
+    liveActivity?: { name: string; course: string; message: string; time: string }[];
+  }>({});
+  const [chartData, setChartData] = useState<number[]>([]);
+  const [liveActivity, setLiveActivity] = useState<any[]>([]);
 
-  const approveMentor = (id: string) => {
-    setPendingMentors((prev) => prev.filter((mentor) => mentor._id !== id));
+  const loadPendingMentors = async () => {
+    try {
+      const res = await api.get("/admin/pending-mentors");
+      const data = res.data;
+      setPendingMentors(Array.isArray(data) ? data : data.mentors || []);
+    } catch (error) {
+      console.error("Failed to load pending mentors", error);
+    }
   };
+
+  const loadDashboardStats = async () => {
+    try {
+      const res = await api.get("/admin/dashboard");
+      setDashboardStats(res.data);
+      setChartData(res.data.chartData?.map((item: any) => item.value) || []);
+      setLiveActivity(res.data.liveActivity || []);
+    } catch (error) {
+      console.error("Failed to load dashboard stats", error);
+    }
+  };
+
+  const approveMentor = async (id: string) => {
+    try {
+      await api.put(`/admin/mentor/${id}/approve`);
+      setPendingMentors((prev) => prev.filter((mentor) => mentor._id !== id));
+    } catch (error) {
+      console.error("Approve failed", error);
+    }
+  };
+
+  const rejectMentor = async (id: string) => {
+    try {
+      await api.put(`/admin/mentor/${id}/reject`);
+      setPendingMentors((prev) => prev.filter((mentor) => mentor._id !== id));
+    } catch (error) {
+      console.error("Reject failed", error);
+    }
+  };
+
+  useEffect(() => {
+    loadPendingMentors();
+    loadDashboardStats();
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -56,82 +95,54 @@ const AdminDashboard = () => {
           canvas.parentElement?.clientWidth || 800);
       const H = (canvas.height = 340);
 
-      const data = [
-        1050, 1200, 1150, 1350, 1500, 1400, 1900, 2100,
-        2300, 2100, 2750, 3000, 3200, 3500, 3750, 3820,
-      ];
+      const data = chartData.length
+        ? chartData
+        : [1050, 1200, 1150, 1350, 1500, 1400, 1900];
 
       const padLeft = 48;
       const padBottom = 40;
       const chartW = W - padLeft - 20;
       const chartH = H - 20 - padBottom;
-      const maxVal = 4000;
+      const maxVal = Math.max(...data, 1);
 
       ctx.clearRect(0, 0, W, H);
       ctx.font = "11px Inter";
 
-      [0, 1000, 2000, 3000, 4000].forEach((tick) => {
-        const y =
-          20 + chartH - (tick / maxVal) * chartH;
+      const yTicks = 5;
+      for (let i = 0; i <= yTicks; i += 1) {
+        const tick = Math.round((maxVal / yTicks) * i);
+        const y = 20 + chartH - (tick / maxVal) * chartH;
 
         ctx.fillStyle = "rgba(148,163,184,.8)";
         ctx.textAlign = "right";
-        ctx.fillText(
-          tick === 0 ? "0" : tick / 1000 + "K",
-          padLeft - 10,
-          y + 4
-        );
+        ctx.fillText(tick === 0 ? "0" : tick.toString(), padLeft - 10, y + 4);
 
-        ctx.strokeStyle =
-          "rgba(255,255,255,.08)";
+        ctx.strokeStyle = "rgba(255,255,255,.08)";
         ctx.beginPath();
         ctx.moveTo(padLeft, y);
         ctx.lineTo(padLeft + chartW, y);
         ctx.stroke();
-      });
+      }
 
       const pts = data.map((v, i) => ({
-        x:
-          padLeft +
-          (i / (data.length - 1)) * chartW,
-        y:
-          20 +
-          chartH -
-          (v / maxVal) * chartH,
+        x: padLeft + (i / (data.length - 1)) * chartW,
+        y: 20 + chartH - (v / maxVal) * chartH,
       }));
 
-      const grad = ctx.createLinearGradient(
-        0,
-        20,
-        0,
-        20 + chartH
-      );
-      grad.addColorStop(
-        0,
-        "rgba(34,211,238,.28)"
-      );
-      grad.addColorStop(
-        1,
-        "rgba(34,211,238,0)"
-      );
+      const grad = ctx.createLinearGradient(0, 20, 0, 20 + chartH);
+      grad.addColorStop(0, "rgba(34,211,238,.28)");
+      grad.addColorStop(1, "rgba(34,211,238,0)");
 
       ctx.beginPath();
       ctx.moveTo(pts[0].x, 20 + chartH);
-      pts.forEach((p) =>
-        ctx.lineTo(p.x, p.y)
-      );
-      ctx.lineTo(
-        pts[pts.length - 1].x,
-        20 + chartH
-      );
+      pts.forEach((p) => ctx.lineTo(p.x, p.y));
+      ctx.lineTo(pts[pts.length - 1].x, 20 + chartH);
       ctx.fillStyle = grad;
       ctx.fill();
 
       ctx.beginPath();
       ctx.moveTo(pts[0].x, pts[0].y);
-      pts.forEach((p) =>
-        ctx.lineTo(p.x, p.y)
-      );
+      pts.forEach((p) => ctx.lineTo(p.x, p.y));
       ctx.strokeStyle = "#22d3ee";
       ctx.lineWidth = 3;
       ctx.stroke();
@@ -140,12 +151,8 @@ const AdminDashboard = () => {
     drawChart();
     window.addEventListener("resize", drawChart);
 
-    return () =>
-      window.removeEventListener(
-        "resize",
-        drawChart
-      );
-  }, []);
+    return () => window.removeEventListener("resize", drawChart);
+  }, [chartData]);
 
   return (
     <div className="space-y-8 pb-10 min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-black p-2">
@@ -153,14 +160,14 @@ const AdminDashboard = () => {
       <div className="grid grid-cols-4 gap-6">
         <GlassStatCard
           label="Total Students"
-          value="3,281"
+          value={dashboardStats.students?.toLocaleString() ?? "-"}
           trend="+12.5%"
           icon={<Users className="text-cyan-300" />}
           color="#22d3ee"
         />
         <GlassStatCard
           label="Mentors"
-          value="142"
+          value={dashboardStats.mentors?.toLocaleString() ?? "-"}
           trend="+8.3%"
           icon={
             <UserCheck className="text-fuchsia-400" />
@@ -169,7 +176,7 @@ const AdminDashboard = () => {
         />
         <GlassStatCard
           label="Courses"
-          value="87"
+          value={dashboardStats.totalCourses?.toLocaleString() ?? "-"}
           trend="+5.7%"
           icon={
             <BookOpen className="text-emerald-400" />
@@ -178,7 +185,7 @@ const AdminDashboard = () => {
         />
         <GlassStatCard
           label="Pending Requests"
-          value="24"
+          value={dashboardStats.pending?.toString() ?? pendingMentors.length.toString()}
           trend="-3.1%"
           icon={
             <Bell className="text-orange-400" />
@@ -210,17 +217,17 @@ const AdminDashboard = () => {
           <div className="relative z-10 grid grid-cols-4 gap-4 mb-8">
             <MiniStat
               label="Active Students"
-              value="2,341"
+              value={dashboardStats.activeStudents?.toLocaleString() ?? "-"}
               trend="10.2%"
             />
             <MiniStat
               label="Active Mentors"
-              value="98"
+              value={dashboardStats.activeMentors?.toLocaleString() ?? "-"}
               trend="6.1%"
             />
             <MiniStat
               label="Enrollments"
-              value="4,871"
+                             value={dashboardStats.enrollmentCount?.toLocaleString() ?? "-"}
               trend="14.6%"
             />
             <MiniStat
@@ -236,13 +243,17 @@ const AdminDashboard = () => {
           />
 
           <div className="relative z-10 flex justify-between mt-6 px-12 text-[10px] text-slate-500 font-bold uppercase tracking-widest">
-            <span>May 1</span>
-            <span>May 6</span>
-            <span>May 11</span>
-            <span>May 16</span>
-            <span>May 21</span>
-            <span>May 26</span>
-            <span>May 31</span>
+            {(dashboardStats.chartData?.length ? dashboardStats.chartData : [
+              { label: "May 1" },
+              { label: "May 6" },
+              { label: "May 11" },
+              { label: "May 16" },
+              { label: "May 21" },
+              { label: "May 26" },
+              { label: "May 31" },
+            ]).map((item, index) => (
+              <span key={index}>{item.label}</span>
+            ))}
           </div>
         </div>
 
@@ -257,24 +268,35 @@ const AdminDashboard = () => {
           </div>
 
           <div className="relative z-10 space-y-6">
-            <ActivityItem
-              icon={<Activity size={16} />}
-              color="bg-cyan-500/20 text-cyan-300"
-              text="Mentor Samuel graded 34 students"
-              time="2m ago"
-            />
-            <ActivityItem
-              icon={<Users size={16} />}
-              color="bg-indigo-500/20 text-indigo-300"
-              text="Student Hana enrolled in React Course"
-              time="5m ago"
-            />
-            <ActivityItem
-              icon={<CreditCard size={16} />}
-              color="bg-emerald-500/20 text-emerald-300"
-              text="Payment received from 18 students"
-              time="18m ago"
-            />
+            {(liveActivity.length > 0 ? liveActivity : [
+              {
+                message: "Mentor Samuel graded 34 students",
+                time: "2m ago"
+              },
+              {
+                message: "Student Hana enrolled in React Course",
+                time: "5m ago"
+              },
+              {
+                message: "Payment received from 18 students",
+                time: "18m ago"
+              }
+            ]).map((item: any, index: number) => {
+              const date = new Date(item.time);
+              const timeText = isNaN(date.getTime())
+                ? item.time
+                : date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+              return (
+                <ActivityItem
+                  key={index}
+                  icon={<Activity size={16} />}
+                  color="bg-cyan-500/20 text-cyan-300"
+                  text={item.message}
+                  time={timeText}
+                />
+              );
+            })}
           </div>
         </div>
       </div>
@@ -309,7 +331,10 @@ const AdminDashboard = () => {
                           <Check size={16} />
                         </button>
 
-                        <button className="p-2 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-lg transition-all">
+                        <button
+                          onClick={() => rejectMentor(m._id)}
+                          className="p-2 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-lg transition-all"
+                        >
                           <X size={16} />
                         </button>
                       </td>

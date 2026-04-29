@@ -24,8 +24,8 @@ Content-Type: application/pdf
 < ./certificate.pdf
 ------WebKitFormBoundary123--
 ###
-PUT http://localhost:5000/api/admin/mentor/6996185e1ea89802aa841a59/approve
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5OTQxNTEyNWU2MDAxN2MxYTVlMjQzNyIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc3MTQ0ODM2MCwiZXhwIjoxNzcyMDUzMTYwfQ.iPz4MkoW09MVlhMh8iVbtpbrwkp7lU1HA1NlpsGWOMA
+PUT http://localhost:5000/api/admin/mentor/69ee625b9f3f8c1d86f8a262/approve
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5ZWJhNjYyMjc4YzU5NTJkYzcwOTNmZiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc3NzIzMDgwNiwiZXhwIjoxNzc3ODM1NjA2fQ.7n_bnR2oG6yGucKgpawWwj59kMmUjuNuHXZLngPxJ-s
 Content-Type: application/json
 
 ###

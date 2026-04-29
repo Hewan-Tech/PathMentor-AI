@@ -67,6 +67,19 @@ const getLessonsByLevel = asyncHandler(async (req, res) => {
   });
 
 });
+ 
+const adminGetLessons = async (req, res) => {
+  const lessons = await Lesson.find().populate("course");
+  res.json(lessons);
+};
 
+const adminDeleteLesson = async (req, res) => {
+  await Lesson.findByIdAndDelete(req.params.id);
+  res.json({ message: "Lesson deleted" });
+};
 
-module.exports = {createLesson, getLessonsByLevel}
+module.exports = {createLesson,
+                  getLessonsByLevel, 
+                  adminGetLessons,
+                  adminDeleteLesson
+}

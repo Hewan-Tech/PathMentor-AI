@@ -1,5 +1,8 @@
 const User = require("../models/User");
+const Course = require("../models/Course");
+const Progress = require("../models/Progress");
 const bcrypt = require("bcryptjs");
+const asyncHandler = require("../middleware/asyncHandler");
 
 
 const getMyProfile= async (req,res) => {
@@ -141,6 +144,22 @@ const getAllUsers= async (req,res) =>{
 
 }; 
 
+// ADMIN : get all verified mentors
+const getAllMentors = asyncHandler(async (req, res) => {
+  const mentors = await User.find({
+    role: "mentor",
+    "mentorVerification.status": "approved",
+  })
+    .select("-password")
+    .sort({ createdAt: -1 });
+
+  res.status(200).json({
+    success: true,
+    count: mentors.length,
+    mentors,
+  });
+});
+
 // ADMIN:  delete users
  const deleteUser = async (req, res) => {
    await User.findByIdAndDelete(req.params.id);
@@ -163,15 +182,161 @@ const getAllUsers= async (req,res) =>{
   const totalUsers = await User.countDocuments();
   const mentors = await User.countDocuments({ role: "mentor" });
   const students = await User.countDocuments({ role: "student" });
-  const pending = await User.countDocuments({ mentorStatus: "pending" });
+  const pending = await User.countDocuments({ "mentorVerification.status": "pending" });
+  const totalCourses = await Course.countDocuments();
+  const activeStudents = await Progress.distinct("user").then((ids) => ids.length);
+  const enrollmentCount = await Progress.countDocuments();
+  const activeMentors = await Course.distinct("createdBy").then((ids) => ids.length);
+
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setHours(0, 0, 0, 0);
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+
+  const rawChart = await Progress.aggregate([
+    {
+      $match: {
+        createdAt: { $gte: sevenDaysAgo }
+      }
+    },
+    {
+      $group: {
+        _id: {
+          $dateToString: {
+            format: "%Y-%m-%d",
+            date: "$createdAt"
+          }
+        },
+        enrollments: { $sum: 1 }
+      }
+    },
+    { $sort: { _id: 1 } }
+  ]);
+
+  const chartMap = rawChart.reduce((acc, item) => {
+    acc[item._id] = item.enrollments;
+    return acc;
+  }, {});
+
+  const chartData = [];
+  for (let i = 0; i < 7; i += 1) {
+    const date = new Date(sevenDaysAgo);
+    date.setDate(sevenDaysAgo.getDate() + i);
+    const iso = date.toISOString().split("T")[0];
+    chartData.push({
+      label: date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric"
+      }),
+      value: chartMap[iso] || 0
+    });
+  }
+
+  const recentProgress = await Progress.find()
+    .sort({ updatedAt: -1 })
+    .limit(5)
+    .populate("user", "name")
+    .populate("course", "title");
+
+  const liveActivity = recentProgress.map((progress) => ({
+    name: progress.user?.name || "Unknown",
+    course: progress.course?.title || "Course",
+    message: `${progress.user?.name || "Someone"} earned ${progress.xpEarned} XP in ${progress.course?.title || "a course"}`,
+    time: progress.updatedAt
+  }));
 
   res.json({
     totalUsers,
     mentors,
     students,
-    pending
+    pending,
+    totalCourses,
+    activeStudents,
+    activeMentors,
+    enrollmentCount,
+    chartData,
+    liveActivity,
   });
 };
+
+// GET pending mentors
+const getPendingMentors = asyncHandler(async (req, res) => {
+  const mentors = await User.find({ "mentorVerification.status": "pending" })
+    .select("-password")
+    .sort({ createdAt: -1 });
+  res.json(mentors);
+});
+
+// APPROVE mentor
+const approveMentor = asyncHandler(async (req, res) => {
+  try {
+    const mentor = await User.findById(req.params.id);
+
+    if (!mentor) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Optional: check if already approved
+    if (mentor.mentorVerification?.status === "approved") {
+      return res.status(400).json({ message: "Already approved" });
+    }
+
+    mentor.role = "mentor"; // important
+    mentor.mentorVerification = {
+      status: "approved",
+      reviewedBy: req.user._id,
+      reviewedAt: new Date(),
+    };
+
+    await mentor.save();
+
+    res.status(200).json({
+      message: "Mentor approved successfully",
+      mentor,
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// REJECT mentor
+const rejectMentor = asyncHandler(async (req, res) => {
+  try {
+    const mentor = await User.findById(req.params.id);
+
+    // 🔍 Check if user exists
+    if (!mentor) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // 🔍 Prevent duplicate rejection
+    if (mentor.mentorVerification?.status === "rejected") {
+      return res.status(400).json({ message: "Already rejected" });
+    }
+
+    // 🧠 Update verification status
+    mentor.mentorVerification = {
+      status: "rejected",
+      reviewedBy: req.user._id,
+      reviewedAt: new Date(),
+    };
+
+    // Optional: reset role if needed
+    if (mentor.role === "mentor") {
+      mentor.role = "student"; // or keep as is depending on your logic
+    }
+
+    await mentor.save();
+
+    res.status(200).json({
+      message: "Mentor rejected successfully",
+      mentor,
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 
 module.exports= { getMyProfile,
                   updateMyProfile, 
@@ -180,6 +345,9 @@ module.exports= { getMyProfile,
                   getAllUsers,
                   deleteUser,
                   updateUserRole,
-                  getDashboardStats
+                  getDashboardStats,
+                  getPendingMentors,
+                  approveMentor,
+                  rejectMentor
    
  };

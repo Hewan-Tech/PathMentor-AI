@@ -51,7 +51,7 @@ const MentorPendingDashboard = () => {
       }
 
       // If approved go to real mentor dashboard
-      if (user.approvalStatus === "approved") {
+      if (user.mentorVerification?.status === "approved") {
         navigate("/mentor/dashboard");
         return;
       }
@@ -70,7 +70,9 @@ const MentorPendingDashboard = () => {
   };
 
   const getStatusUI = () => {
-    if (mentor?.approvalStatus === "approved") {
+    const status = mentor?.mentorVerification?.status;
+
+    if (status === "approved") {
       return {
         text: "Approved",
         color: "text-emerald-400",
@@ -79,7 +81,7 @@ const MentorPendingDashboard = () => {
       };
     }
 
-    if (mentor?.approvalStatus === "rejected") {
+    if (status === "rejected") {
       return {
         text: "Rejected",
         color: "text-red-400",

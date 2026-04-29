@@ -28,4 +28,18 @@ const getQuizByLesson = asyncHandler(async (req, res) => {
 
 });
 
-module.exports = {createQuiz, getQuizByLesson }
+const adminGetQuizzes = asyncHandler(async (req, res) => {
+  const quizzes = await Quiz.find().populate("course");
+  res.json(quizzes);
+});
+
+const adminDeleteQuiz = asyncHandler(async (req, res) => {
+  await Quiz.findByIdAndDelete(req.params.id);
+  res.json({ message: "Quiz deleted" });
+
+});
+module.exports = {createQuiz, 
+                  getQuizByLesson,
+                adminGetQuizzes,
+                adminDeleteQuiz
+              };
