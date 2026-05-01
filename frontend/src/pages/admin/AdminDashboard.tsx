@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "@/services/api";
 import {
   Users,
@@ -24,6 +25,7 @@ const glass =
 const AdminDashboard = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [pendingMentors, setPendingMentors] = useState<any[]>([]);
+  const navigate = useNavigate();
   const [dashboardStats, setDashboardStats] = useState<{
     totalUsers?: number;
     mentors?: number;
@@ -34,10 +36,9 @@ const AdminDashboard = () => {
     activeMentors?: number;
     enrollmentCount?: number;
     chartData?: { label: string; value: number }[];
-    liveActivity?: { name: string; course: string; message: string; time: string }[];
   }>({});
   const [chartData, setChartData] = useState<number[]>([]);
-  const [liveActivity, setLiveActivity] = useState<any[]>([]);
+  const [recentActivities, setRecentActivities] = useState<any[]>([]);
 
   const loadPendingMentors = async () => {
     try {
@@ -54,9 +55,17 @@ const AdminDashboard = () => {
       const res = await api.get("/admin/dashboard");
       setDashboardStats(res.data);
       setChartData(res.data.chartData?.map((item: any) => item.value) || []);
-      setLiveActivity(res.data.liveActivity || []);
     } catch (error) {
       console.error("Failed to load dashboard stats", error);
+    }
+  };
+
+  const loadRecentActivities = async () => {
+    try {
+      const res = await api.get("/admin/activities");
+      setRecentActivities(res.data || []);
+    } catch (error) {
+      console.error("Failed to load recent activities", error);
     }
   };
 
@@ -81,6 +90,7 @@ const AdminDashboard = () => {
   useEffect(() => {
     loadPendingMentors();
     loadDashboardStats();
+    loadRecentActivities();
   }, []);
 
   useEffect(() => {
@@ -262,13 +272,16 @@ const AdminDashboard = () => {
             <h3 className="text-lg font-bold text-white">
               Live Activity
             </h3>
-            <button className="text-cyan-300 text-xs font-bold hover:underline">
+            <button
+            className="text-cyan-300 text-xs font-bold hover:underline"
+            onClick={() => navigate("/admin/activities")}
+          >
               View All
             </button>
           </div>
 
           <div className="relative z-10 space-y-6">
-            {(liveActivity.length > 0 ? liveActivity : [
+            {(recentActivities.length > 0 ? recentActivities : [
               {
                 message: "Mentor Samuel graded 34 students",
                 time: "2m ago"

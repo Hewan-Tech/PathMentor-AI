@@ -1,4 +1,5 @@
 const express= require('express');
+const path = require('path');
 const PORT= process.env.PORT || 5000;
 const authRoutes = require("./routes/authRoutes");
 const adminRoutes = require("./routes/adminRoutes");
@@ -27,6 +28,7 @@ app.use(cors({
   origin: "http://localhost:8080",
   credentials: true
 }));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 min

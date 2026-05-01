@@ -1,7 +1,7 @@
 const bcrypt = require("bcryptjs");
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
-
+const { logActivity } = require("../utils/activityLogger");
 
 // ================= REGISTER =================
 const registerUser = async (req, res) => {
@@ -57,7 +57,13 @@ const registerUser = async (req, res) => {
             process.env.JWT_SECRET,
             { expiresIn: "7d" }
         );
+                
 
+                await logActivity({
+                user: newUser._id,
+                type: "USER_REGISTERED",
+                message: `${newUser.name} joined the platform`
+                });
         // Send response
         res.status(201).json({
             message: "User registered successfully",

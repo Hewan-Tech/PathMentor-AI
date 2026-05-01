@@ -3,7 +3,7 @@ const Course = require("../models/Course");
 const Progress = require("../models/Progress");
 const bcrypt = require("bcryptjs");
 const asyncHandler = require("../middleware/asyncHandler");
-
+const { logActivity } = require("../utils/activityLogger");
 
 const getMyProfile= async (req,res) => {
         res.status(200).json({
@@ -103,11 +103,22 @@ const completeProfile = async (req, res) => {
 
     const user = await User.findById(req.user._id);
 
- 
-   if (!user) {
-  res.status(404);
-  throw new Error("User not found");
-}
+    if (!user) {
+      res.status(404);
+      throw new Error("User not found");
+    }
+
+    const uploadedFiles = req.files || [];
+    const uploadedPaths = uploadedFiles.map((file) => `/uploads/mentor-docs/${file.filename}`);
+
+    const strengthsArray = Array.isArray(strengths)
+      ? strengths
+      : typeof strengths === "string"
+      ? strengths
+          .split(",")
+          .map((item) => item.trim())
+          .filter(Boolean)
+      : [];
 
     user.learningProfile = {
       skillTrack,
@@ -117,18 +128,25 @@ const completeProfile = async (req, res) => {
       learningGoal,
       personalGoal,
       persona,
-      strengths,
-      recommendation
+      strengths: strengthsArray,
+      recommendation,
     };
 
     user.onboardingCompleted = true;
+    user.mentorVerification = {
+      ...user.mentorVerification,
+      documents: [
+        ...(user.mentorVerification?.documents || []),
+        ...uploadedPaths,
+      ],
+    };
 
     await user.save();
 
     res.status(200).json({
-      message: "Profile completed successfully"
+      message: "Profile completed successfully",
+      documents: user.mentorVerification.documents,
     });
-
   } catch (error) {
     console.error("Onboarding error:", error);
     res.status(500).json({
@@ -157,6 +175,59 @@ const getAllMentors = asyncHandler(async (req, res) => {
     success: true,
     count: mentors.length,
     mentors,
+  });
+});
+
+// ADMIN : create mentor
+const createMentor = asyncHandler(async (req, res) => {
+  const { name, email, password, skillTrack } = req.body;
+
+  if (!name || !email || !password) {
+    return res.status(400).json({
+      message: "Name, email, and password are required",
+    });
+  }
+
+  const existingUser = await User.findOne({ email: email.toLowerCase() });
+  if (existingUser) {
+    return res.status(400).json({ message: "Email is already registered" });
+  }
+
+  const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%#*?&])[A-Za-z\d@$!%#*?&]{8,}$/;
+  if (!passwordRegex.test(password)) {
+    return res.status(400).json({
+      message: "Password must contain at least 8 characters, one uppercase letter, one number, and one special character",
+    });
+  }
+
+  const salt = await bcrypt.genSalt(10);
+  const hashedPassword = await bcrypt.hash(password, salt);
+
+  const mentor = await User.create({
+    name,
+    email: email.toLowerCase(),
+    password: hashedPassword,
+    role: "mentor",
+    learningProfile: {
+      skillTrack: skillTrack || "",
+    },
+    onboardingCompleted: true,
+    mentorVerification: {
+      status: "approved",
+      reviewedBy: req.user._id,
+      reviewedAt: new Date(),
+    },
+  });
+
+  res.status(201).json({
+    message: "Mentor created successfully",
+    mentor: {
+      _id: mentor._id,
+      name: mentor.name,
+      email: mentor.email,
+      role: mentor.role,
+      mentorVerification: mentor.mentorVerification,
+    },
   });
 });
 
@@ -288,7 +359,14 @@ const approveMentor = asyncHandler(async (req, res) => {
     };
 
     await mentor.save();
+     
 
+await logActivity({
+  user: mentor._id,
+  type: "MENTOR_APPROVED",
+  message: `${mentor.name} was approved as mentor`,
+  meta: { approvedBy: req.user._id }
+});
     res.status(200).json({
       message: "Mentor approved successfully",
       mentor,
@@ -338,16 +416,74 @@ const rejectMentor = asyncHandler(async (req, res) => {
   }
 });
 
+
+
+const searchMentors = asyncHandler(async (req, res) => {
+  const { name, course, page = 1, limit = 10 } = req.query;
+
+  try {
+    // 🔹 Step 1: Base filter (only mentors)
+    let userFilter = {
+      role: "mentor"
+    };
+
+    // 🔹 Step 2: Name search (case-insensitive)
+    if (name) {
+      userFilter.name = { $regex: name, $options: "i" };
+    }
+
+    let mentors = [];
+
+    // 🔹 Step 3: If course search exists
+    if (course) {
+      // find courses matching input
+      const courses = await Course.find({
+        title: { $regex: course, $options: "i" }
+      });
+
+      // extract mentor IDs
+      const mentorIds = courses.map(c => c.instructor);
+
+      userFilter._id = { $in: mentorIds };
+    }
+
+    // 🔹 Step 4: Pagination
+    const skip = (page - 1) * limit;
+
+    mentors = await User.find(userFilter)
+      .select("-password")
+      .skip(skip)
+      .limit(Number(limit))
+      .sort({ createdAt: -1 });
+
+    // 🔹 Step 5: total count (for frontend pagination)
+    const total = await User.countDocuments(userFilter);
+
+    res.json({
+      mentors,
+      total,
+      page: Number(page),
+      pages: Math.ceil(total / limit)
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 module.exports= { getMyProfile,
                   updateMyProfile, 
                   changePassword,
                   completeProfile,
                   getAllUsers,
+                  getAllMentors,
+                  createMentor,
                   deleteUser,
                   updateUserRole,
                   getDashboardStats,
                   getPendingMentors,
                   approveMentor,
-                  rejectMentor
+                  rejectMentor,
+                  searchMentors
    
  };

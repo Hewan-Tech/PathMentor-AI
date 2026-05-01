@@ -138,7 +138,8 @@ const quizCtrl = require("../controllers/quizController");
 const progressCtrl = require("../controllers/progressController");
 const leaderboardCtrl = require("../controllers/leaderboardController");
 const announcementCtrl = require("../controllers/announcementController");
-
+const activityCtrl = require("../controllers/admin/activityController");
+const studentController = require("../controllers/studentController");
 // ADMIN ONLY
 router.use(guard, authorize("admin"));
 
@@ -153,6 +154,7 @@ router.put("/user/:id/role", userCtrl.updateUserRole);
 /* ================= MENTORS ================= */
 router.get("/mentors", userCtrl.getAllMentors);
 router.get("/pending-mentors", userCtrl.getPendingMentors);
+router.post("/mentor", userCtrl.createMentor);
 router.put("/mentor/:id/approve", userCtrl.approveMentor);
 router.put("/mentor/:id/reject", userCtrl.rejectMentor);
 
@@ -180,5 +182,24 @@ router.post("/announcement", announcementCtrl.createAnnouncement);
 router.delete("/announcement/:id", announcementCtrl.deleteAnnouncement);
 router.get("/announcements", announcementCtrl.getAnnouncements);
 
+// 🔍 SEARCH MENTORS
+router.get("/search-mentors", userCtrl.searchMentors);
+
+
+
+// recent (dashboard)
+router.get("/activities", activityCtrl.getRecentActivities);
+
+// view all
+router.get("/activities/all", activityCtrl.getAllActivities);
+
+
+// student routes
+router.get("/students", studentController.getStudents);
+router.post("/students", studentController.createStudent);
+router.get("/students/:id", studentController.getStudentById);
+router.put("/students/:id", studentController.updateStudent);
+router.delete("/students/:id", studentController.deleteStudent);
+router.patch("/students/:id/status", studentController.updateStatus);
 
 module.exports = router;

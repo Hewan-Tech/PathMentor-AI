@@ -20,6 +20,7 @@ import MentorPendingApproval from "./pages/mentor/MentorPendingApproval";
 // Admin Pages
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import Activities from "./pages/admin/Activities";
 
 // Admin Mentor
 import AllMentors from "./pages/admin/mentors/AllMentors";
@@ -94,6 +95,7 @@ const App = () => (
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="activities" element={<Activities />} />
 
             {/* Mentor Management */}
             <Route path="mentors" element={<AllMentors />} />

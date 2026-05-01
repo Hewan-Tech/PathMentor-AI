@@ -1,6 +1,6 @@
 const Quiz = require("../models/Quiz");
 const asyncHandler = require("../middleware/asyncHandler");
-
+const { logActivity } = require("../utils/activityLogger");
 const createQuiz = asyncHandler(async (req, res) => {
 
   const quiz = await Quiz.create({
@@ -12,7 +12,11 @@ const createQuiz = asyncHandler(async (req, res) => {
     success: true,
     data: quiz
   });
-
+ await logActivity({
+  user: req.user._id,
+  type: "QUIZ_SUBMITTED",
+  message: `User submitted a quiz`
+});
 });
 
 const getQuizByLesson = asyncHandler(async (req, res) => {

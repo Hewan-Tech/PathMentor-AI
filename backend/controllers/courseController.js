@@ -2,6 +2,8 @@ const Course= require("../models/Course");
 const Level = require("../models/Level");
 const asyncHandler = require("../middleware/asyncHandler");
 const Lesson = require("../models/Lesson");
+const { logActivity } = require("../utils/activityLogger");
+
 
 const createCourse = asyncHandler(async (req, res)=> {
 
@@ -14,6 +16,11 @@ const createCourse = asyncHandler(async (req, res)=> {
     });
     await course.save();
 
+  await logActivity({
+  user: req.user._id,
+  type: "COURSE_CREATED",
+  message: `New course "${course.title}" created`
+});
   const defaultLevels = [
     "Awareness",
     "Beginner",

@@ -1,7 +1,7 @@
 const Lesson = require("../models/Lesson");
 const asyncHandler = require("../middleware/asyncHandler");
 const Level = require("../models/Level");
-
+const { logActivity } = require("../utils/activityLogger");
 
 const createLesson = asyncHandler(async (req, res) => {
 
@@ -30,6 +30,11 @@ if(!level){
     data: lesson
   });
 
+  await logActivity({
+  user: req.user._id,
+  type: "LESSON_CREATED",
+  message: `Lesson "${lesson.title}" added`
+});
 });
 
 const getLessonsByLevel = asyncHandler(async (req, res) => {
