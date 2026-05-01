@@ -160,6 +160,7 @@ router.put("/mentor/:id/reject", userCtrl.rejectMentor);
 
 /* ================= COURSES ================= */
 router.get("/courses", courseCtrl.adminGetCourses);
+router.post("/courses", courseCtrl.createCourse);
 router.delete("/course/:id", courseCtrl.adminDeleteCourse);
 router.put("/course/:id", courseCtrl.adminUpdateCourse);
 
@@ -201,5 +202,6 @@ router.get("/students/:id", studentController.getStudentById);
 router.put("/students/:id", studentController.updateStudent);
 router.delete("/students/:id", studentController.deleteStudent);
 router.patch("/students/:id/status", studentController.updateStatus);
+
 
 module.exports = router;

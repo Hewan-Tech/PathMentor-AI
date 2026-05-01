@@ -42,10 +42,14 @@ const getStudents = async (req, res) => {
 // ✅ CREATE STUDENT
 const createStudent = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, courseId, courseTitle, courseLevel } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({ message: "Name, email, and password are required" });
+    }
+
+    if ((courseTitle && !courseLevel) || (!courseTitle && courseLevel)) {
+      return res.status(400).json({ message: "Course and level must both be provided if one is provided." });
     }
 
     const existing = await User.findOne({ email: email.toLowerCase() });
@@ -63,12 +67,28 @@ const createStudent = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
+    const onboardingCompleted = Boolean(courseTitle && courseLevel);
+
+    const learningProfile = {};
+    if (courseTitle) {
+      learningProfile.course = {
+        id: courseId,
+        title: courseTitle,
+      };
+      learningProfile.skillTrack = courseTitle;
+    }
+    if (courseLevel) {
+      learningProfile.courseLevel = courseLevel;
+      learningProfile.experienceLevel = courseLevel;
+    }
+
     const student = await User.create({
       name,
       email: email.toLowerCase(),
       password: hashedPassword,
       role: "student",
-      onboardingCompleted: false,
+      onboardingCompleted,
+      learningProfile: Object.keys(learningProfile).length ? learningProfile : undefined,
     });
 
     const responseStudent = {
@@ -105,7 +125,7 @@ const getStudentById = async (req, res) => {
 // ✅ UPDATE STUDENT
 const updateStudent = async (req, res) => {
   try {
-    const { name, email, onboardingCompleted } = req.body;
+    const { name, email, onboardingCompleted, password, courseId, courseTitle, courseLevel } = req.body;
 
     const student = await User.findOne({ _id: req.params.id, role: "student" });
     if (!student) {
@@ -118,6 +138,39 @@ const updateStudent = async (req, res) => {
         return res.status(400).json({ message: "Email already in use" });
       }
       student.email = email.toLowerCase();
+    }
+
+    if (password) {
+      const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
+      if (!passwordRegex.test(password)) {
+        return res.status(400).json({
+          message: "Password must contain uppercase, number, symbol, and be at least 8 characters",
+        });
+      }
+
+      const salt = await bcrypt.genSalt(10);
+      student.password = await bcrypt.hash(password, salt);
+    }
+
+    if (courseTitle || courseLevel) {
+      student.learningProfile = student.learningProfile || {};
+
+      if (courseTitle) {
+        student.learningProfile.course = {
+          id: courseId,
+          title: courseTitle,
+        };
+        student.learningProfile.skillTrack = courseTitle;
+      }
+
+      if (courseLevel) {
+        student.learningProfile.courseLevel = courseLevel;
+        student.learningProfile.experienceLevel = courseLevel;
+      }
+
+      if (courseTitle && courseLevel) {
+        student.onboardingCompleted = true;
+      }
     }
 
     student.name = name || student.name;

@@ -20,6 +20,11 @@ const courseSchema = new mongoose.Schema({
     ref: "User"
   },
 
+  instructor: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User"
+  },
+
   // levels: [{
   //   type: mongoose.Schema.Types.ObjectId,
   //   ref: "Level"

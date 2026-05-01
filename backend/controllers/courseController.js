@@ -6,21 +6,21 @@ const { logActivity } = require("../utils/activityLogger");
 
 
 const createCourse = asyncHandler(async (req, res)=> {
-
-
-    const course = new Course ({
-        title: req.body.title,
-        description: req.body.description,
-        category: req.body.category,
-        createdBy: req.user._id
-    });
-    await course.save();
+  const course = new Course ({
+    title: req.body.title,
+    description: req.body.description,
+    category: req.body.category,
+    createdBy: req.user._id,
+    instructor: req.body.instructorId || undefined,
+  });
+  await course.save();
 
   await logActivity({
-  user: req.user._id,
-  type: "COURSE_CREATED",
-  message: `New course "${course.title}" created`
-});
+    user: req.user._id,
+    type: "COURSE_CREATED",
+    message: `New course "${course.title}" created`
+  });
+
   const defaultLevels = [
     "Awareness",
     "Beginner",
@@ -31,24 +31,22 @@ const createCourse = asyncHandler(async (req, res)=> {
     "Mastery"
   ];
 
-     const levelPromises = defaultLevels.map((levelName, index) => {
-
+  const levelPromises = defaultLevels.map((levelName, index) => {
     return Level.create({
       title: levelName,
       order: index + 1,
       course: course._id
     });
-
   });
 
   await Promise.all(levelPromises);
 
-     res.status(201).json({
+  res.status(201).json({
     success: true,
-      message: "Track created with default levels",
+    message: "Track created with default levels",
     data: course
+  });
 });
-})
 
 const getCourseRoadmap = asyncHandler(async (req, res) => {
 
@@ -76,12 +74,48 @@ const getCourseRoadmap = asyncHandler(async (req, res) => {
 
 });
 
-const adminGetCourses = async (req, res) => {
-  const courses = await Course.find().populate("instructor");
-  res.json(courses);
-};
+const adminGetCourses = asyncHandler(async (req, res) => {
+  const { search, mentorId, category, page = 1, limit = 10 } = req.query;
+  const query = {};
 
- const adminDeleteCourse = async (req, res) => {
+  if (search) {
+    const searchRegex = new RegExp(search, "i");
+    query.$or = [
+      { title: searchRegex },
+      { description: searchRegex },
+      { category: searchRegex }
+    ];
+  }
+
+  if (mentorId) {
+    query.instructor = mentorId;
+  }
+
+  if (category) {
+    query.category = category;
+  }
+
+  const pageNumber = Math.max(parseInt(page, 10) || 1, 1);
+  const pageSize = Math.max(parseInt(limit, 10) || 10, 1);
+
+  const total = await Course.countDocuments(query);
+  const courses = await Course.find(query)
+    .populate("instructor")
+    .populate("createdBy")
+    .sort({ createdAt: -1 })
+    .skip((pageNumber - 1) * pageSize)
+    .limit(pageSize);
+
+  res.json({
+    success: true,
+    data: courses,
+    total,
+    page: pageNumber,
+    pages: Math.max(Math.ceil(total / pageSize), 1),
+  });
+});
+
+const adminDeleteCourse = async (req, res) => {
   await Course.findByIdAndDelete(req.params.id);
   res.json({ message: "Course deleted" });
 };
