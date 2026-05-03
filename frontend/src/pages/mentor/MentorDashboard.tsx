@@ -136,7 +136,11 @@ const MentorDashboard = () => {
         }`}
       >
         <div className="max-w-7xl mx-auto px-6 space-y-12">
-          <MainMentorView mentees={mentees} stats={stats} />
+          <MainMentorView
+  mentees={mentees}
+  stats={stats}
+  navigate={navigate}
+/>
         </div>
       </main>
     </div>
@@ -145,7 +149,7 @@ const MentorDashboard = () => {
 
 /* ================= VIEW COMPONENT ================= */
 
-const MainMentorView = ({ mentees, stats }: any) => (
+const MainMentorView = ({ mentees, stats, navigate }: any) => (
   <motion.div
     initial={{ opacity: 0, y: 25 }}
     animate={{ opacity: 1, y: 0 }}
@@ -166,14 +170,26 @@ const MainMentorView = ({ mentees, stats }: any) => (
       </div>
 
       <div className="flex gap-4">
-        <button className="px-6 py-3 rounded-xl bg-white/[0.04] border border-white/10 hover:bg-white/10 transition-all font-semibold text-sm backdrop-blur-xl">
-          Review Queue
-        </button>
+  <button
+    onClick={() => navigate("/mentor/classes")}
+    className="px-6 py-3 rounded-xl bg-[#33b6ff] text-black font-bold text-sm hover:shadow-[0_0_30px_rgba(51,182,255,0.45)] transition-all"
+  >
+    My Classes
+  </button>
 
-        <button className="px-6 py-3 rounded-xl bg-[#33b6ff] text-black font-bold text-sm hover:shadow-[0_0_30px_rgba(51,182,255,0.45)] transition-all">
-          Assign Task
-        </button>
-      </div>
+  <button
+  onClick={() => navigate("/mentor/review")}
+  className="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20"
+>
+  Review Queue
+</button>
+
+  <button
+  onClick={() => navigate("/mentor/task/general")}
+>
+  Assign Task
+</button>
+</div>
     </header>
 
     {/* GRID */}

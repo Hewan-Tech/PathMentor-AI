@@ -16,6 +16,12 @@ import NotFound from "./pages/NotFound";
 // Mentor Pages
 import MentorDashboard from "./pages/mentor/MentorDashboard";
 import MentorPendingApproval from "./pages/mentor/MentorPendingApproval";
+import MentorClasses from "./pages/mentor/MyClasses";
+import MentorClassDetails from "./pages/mentor/ClassDetails";
+import MentorCourseAnalysis from "./pages/mentor/CourseAnalysis";
+import ClassUpload from "./pages/mentor/ClassUpload";
+import MentorTaskBuilder from "./pages/mentor/MentorTaskBuilder";
+import MentorReviewQueue from "./pages/mentor/MentorReviewQueue";
 
 // Admin Pages
 import AdminLayout from "./pages/admin/AdminLayout";
@@ -43,29 +49,27 @@ import AdminLessons from "./pages/admin/courses/AdminLessons";
 import AdminReviews from "./pages/admin/courses/AdminReviews";
 import AdminAssignments from "./pages/admin/courses/AdminAssignments";
 
-// --- NEW: Admin Payments ---
+// Payments
 import Transactions from "./pages/admin/payments/Transactions";
 import Subscriptions from "./pages/admin/payments/Subscriptions";
 import Invoices from "./pages/admin/payments/Invoices";
 import Refunds from "./pages/admin/payments/Refunds";
 
-// --- NEW: Admin Chat & Support ---
+// Chats
 import Conversations from "./pages/admin/chats/Conversations";
 import SupportTickets from "./pages/admin/chats/SupportTickets";
 
-// --- NEW: Admin Feedback ---
+// Feedback
 import AllFeedback from "./pages/admin/feedback/AllFeedback";
 import FeedbackReports from "./pages/admin/feedback/FeedbackReports";
 import Ratings from "./pages/admin/feedback/Ratings";
 
-// --- NEW: Admin Settings ---
+// Settings
 import AdminTeam from "./pages/admin/settings/AdminTeam";
 import RolesPermissions from "./pages/admin/settings/RolesPermissions";
 import SystemSettings from "./pages/admin/settings/SystemSettings";
 import ProfileSettings from "./pages/admin/settings/ProfileSettings";
 import DeveloperTools from "./pages/admin/settings/DeveloperTools";
-
-
 
 const queryClient = new QueryClient();
 
@@ -77,63 +81,76 @@ const App = () => (
 
       <BrowserRouter>
         <Routes>
-          {/* Public */}
+          {/* PUBLIC */}
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/register" element={<Register />} />
 
-          {/* Student */}
+          {/* STUDENT */}
           <Route path="/roadmap" element={<Roadmap />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/profile" element={<ProfilePage />} />
 
-          {/* Mentor */}
+          {/* MENTOR */}
           <Route path="/mentor/pending" element={<MentorPendingApproval />} />
           <Route path="/mentor/dashboard" element={<MentorDashboard />} />
+          <Route path="/mentor/task/:id" element={<MentorTaskBuilder />} />
+          <Route path="/mentor/review" element={<MentorReviewQueue />} />
+          
 
-          {/* Admin */}
+          {/* MENTOR CLASSES */}
+          <Route path="/mentor/classes" element={<MentorClasses />} />
+          <Route path="/mentor/class/:id" element={<MentorClassDetails />} />
+          <Route path="/mentor/upload/:id" element={<ClassUpload />} />
+
+          {/* ANALYSIS PAGE */}
+          <Route path="/mentor/analysis/:id" element={<MentorCourseAnalysis />} />
+
+          
+          
+          {/* ADMIN */}
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="activities" element={<Activities />} />
 
-            {/* Mentor Management */}
+            {/* Mentors */}
             <Route path="mentors" element={<AllMentors />} />
             <Route path="applications" element={<MentorApplications />} />
             <Route path="performance" element={<MentorPerformance />} />
             <Route path="earnings" element={<MentorEarnings />} />
             <Route path="mentor-reviews" element={<MentorReviews />} />
 
-            {/* Student Management */}
+            {/* Students */}
             <Route path="allstudents" element={<AllStudents />} />
             <Route path="enrollments" element={<StudentEnrollments />} />
             <Route path="progress" element={<StudentProgress />} />
             <Route path="grades" element={<GradesStatus />} />
             <Route path="reports" element={<StudentReports />} />
-            
-            {/* Course Management */}
+
+            {/* Courses */}
             <Route path="all-courses" element={<AdminCourses />} />
             <Route path="categories" element={<AdminCategories />} />
             <Route path="lessons" element={<AdminLessons />} />
             <Route path="reviews" element={<AdminReviews />} />
             <Route path="assignments" element={<AdminAssignments />} />
 
-            {/* Payment Management - MATCHING SIDEBAR PATHS */}
+            {/* Payments */}
             <Route path="transactions" element={<Transactions />} />
             <Route path="subscriptions" element={<Subscriptions />} />
             <Route path="invoices" element={<Invoices />} />
             <Route path="refunds" element={<Refunds />} />
-            
-             {/* Chats */}
+
+            {/* Chats */}
             <Route path="chats" element={<Conversations />} />
-           <Route path="tickets" element={<SupportTickets />} />
+            <Route path="tickets" element={<SupportTickets />} />
 
-           {/* CFeedback  */}
-           <Route path="feedback" element={<AllFeedback />} />
-           <Route path="feedback-reports" element={<FeedbackReports />} />
-           <Route path="ratings" element={<Ratings />} />
+            {/* Feedback */}
+            <Route path="feedback" element={<AllFeedback />} />
+            <Route path="feedback-reports" element={<FeedbackReports />} />
+            <Route path="ratings" element={<Ratings />} />
 
-                       {/* Settings */}
+            {/* Settings */}
             <Route path="settings/profile" element={<ProfileSettings />} />
             <Route path="settings/team" element={<AdminTeam />} />
             <Route path="settings/roles" element={<RolesPermissions />} />
