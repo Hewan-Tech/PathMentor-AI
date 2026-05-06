@@ -16,12 +16,16 @@ import NotFound from "./pages/NotFound";
 // Mentor Pages
 import MentorDashboard from "./pages/mentor/MentorDashboard";
 import MentorPendingApproval from "./pages/mentor/MentorPendingApproval";
-import MentorClasses from "./pages/mentor/MyClasses";
-import MentorClassDetails from "./pages/mentor/ClassDetails";
-import MentorCourseAnalysis from "./pages/mentor/CourseAnalysis";
-import ClassUpload from "./pages/mentor/ClassUpload";
-import MentorTaskBuilder from "./pages/mentor/MentorTaskBuilder";
-import MentorReviewQueue from "./pages/mentor/MentorReviewQueue";
+import MyClasses from "./pages/mentor/MyClasses";
+import ProjectsAndQuizzes from "./pages/mentor/ProjectsAndQuizzes";
+import UploadMaterial from "./pages/mentor/UploadMaterial";
+import StudentProfile from "./pages/mentor/StudentProfile";
+import CourseStudents from "./pages/mentor/CourseStudents";
+import CourseAnalysis from "./pages/mentor/CourseAnalysis";
+import StudentProgress from "./pages/mentor/StudentProgress";
+
+
+
 
 // Admin Pages
 import AdminLayout from "./pages/admin/AdminLayout";
@@ -38,7 +42,6 @@ import MentorReviews from "./pages/admin/mentors/MentorReviews";
 // Admin Student
 import AllStudents from "./pages/admin/students/AllStudents";
 import StudentEnrollments from "./pages/admin/students/StudentEnrollments";
-import StudentProgress from "./pages/admin/students/StudentProgress";
 import GradesStatus from "./pages/admin/students/GradesStatus";
 import StudentReports from "./pages/admin/students/StudentReports";
 
@@ -81,6 +84,7 @@ const App = () => (
 
       <BrowserRouter>
         <Routes>
+
           {/* PUBLIC */}
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
@@ -94,20 +98,17 @@ const App = () => (
           {/* MENTOR */}
           <Route path="/mentor/pending" element={<MentorPendingApproval />} />
           <Route path="/mentor/dashboard" element={<MentorDashboard />} />
-          <Route path="/mentor/task/:id" element={<MentorTaskBuilder />} />
-          <Route path="/mentor/review" element={<MentorReviewQueue />} />
+          <Route path="/mentor/courses" element={<MyClasses />} />
+          <Route path="/mentor/projects" element={<ProjectsAndQuizzes />} />
+          <Route path="/mentor/upload" element={<UploadMaterial />} />
+          <Route path="/mentor/student/:id"element={<StudentProfile />}/>
+          <Route path="/mentor/course-students"element={<CourseStudents />}/>
+          <Route path="/mentor/course-analysis/:id"element={<CourseAnalysis />}/>
+          <Route path="/mentor/student-progress/:id"element={<StudentProgress />}/>
+
+          {/* MY CLASSES FLOW */}
           
 
-          {/* MENTOR CLASSES */}
-          <Route path="/mentor/classes" element={<MentorClasses />} />
-          <Route path="/mentor/class/:id" element={<MentorClassDetails />} />
-          <Route path="/mentor/upload/:id" element={<ClassUpload />} />
-
-          {/* ANALYSIS PAGE */}
-          <Route path="/mentor/analysis/:id" element={<MentorCourseAnalysis />} />
-
-          
-          
           {/* ADMIN */}
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<Navigate to="dashboard" replace />} />
@@ -120,7 +121,7 @@ const App = () => (
             <Route path="performance" element={<MentorPerformance />} />
             <Route path="earnings" element={<MentorEarnings />} />
             <Route path="mentor-reviews" element={<MentorReviews />} />
-
+           
             {/* Students */}
             <Route path="allstudents" element={<AllStudents />} />
             <Route path="enrollments" element={<StudentEnrollments />} />
@@ -160,6 +161,7 @@ const App = () => (
 
           {/* 404 */}
           <Route path="*" element={<NotFound />} />
+
         </Routes>
       </BrowserRouter>
     </TooltipProvider>

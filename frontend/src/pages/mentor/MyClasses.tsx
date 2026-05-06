@@ -1,155 +1,137 @@
-import { useState } from "react";
+import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Eye, BarChart3, Users, BookOpen } from "lucide-react";
 
-type ClassType = {
-  id: string;
-  title: string;
-  students: number;
-  lessons: number;
-  status: string;
-  progress: number;
-};
+const courses = [
+  {
+    id: 1,
+    title: "React Mastery",
+    students: 120,
+    progress: 70,
+    image:
+      "https://images.unsplash.com/photo-1633356122544-f134324a6cee",
+  },
+  {
+    id: 2,
+    title: "Node.js Backend Development",
+    students: 95,
+    progress: 55,
+    image:
+      "https://images.unsplash.com/photo-1555949963-aa79dcee981c",
+  },
+  {
+    id: 3,
+    title: "UI/UX Design Fundamentals",
+    students: 80,
+    progress: 40,
+    image:
+      "https://images.unsplash.com/photo-1581291518857-4e27b48ff24e",
+  },
+  {
+    id: 4,
+    title: "Data Structures & Algorithms",
+    students: 150,
+    progress: 85,
+    image:
+      "https://images.unsplash.com/photo-1518770660439-4636190af475",
+  },
+];
 
 const MyClasses = () => {
   const navigate = useNavigate();
-  const [selectedClass, setSelectedClass] = useState<ClassType | null>(null);
-
-  const classes: ClassType[] = [
-    {
-      id: "c1",
-      title: "React Fundamentals",
-      students: 45,
-      lessons: 12,
-      status: "Active",
-      progress: 78,
-    },
-    {
-      id: "c2",
-      title: "Node.js Essentials",
-      students: 32,
-      lessons: 10,
-      status: "Active",
-      progress: 62,
-    },
-    {
-      id: "c3",
-      title: "UI/UX Design Basics",
-      students: 28,
-      lessons: 8,
-      status: "Draft",
-      progress: 35,
-    },
-    {
-      id: "c4",
-      title: "Fullstack Roadmap",
-      students: 60,
-      lessons: 18,
-      status: "Active",
-      progress: 90,
-    },
-  ];
 
   return (
-    <div className="p-6 text-white">
-      {/* HEADER */}
-      <h1 className="text-2xl font-bold mb-6">My Classes</h1>
+    <div className="min-h-screen bg-[#020617] text-white p-8">
 
-      {/* CLASS GRID */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        {classes.map((cls) => (
-          <div
-            key={cls.id}
-            className="rounded-xl border border-white/10 bg-white/5 p-5 hover:bg-white/10 transition"
+      {/* BACK BUTTON */}
+      <button
+        onClick={() => navigate("/mentor/dashboard")}
+        className="mb-6 px-4 py-2 bg-white/10 rounded-lg hover:bg-white/20 transition"
+      >
+        ← Back to Dashboard
+      </button>
+
+      {/* TITLE */}
+      <h1 className="text-4xl font-bold mb-8">
+        My Classes
+      </h1>
+
+      {/* COURSES GRID */}
+      <div className="grid md:grid-cols-2 gap-6">
+        {courses.map((course) => (
+          <motion.div
+            key={course.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="rounded-2xl overflow-hidden bg-white/[0.04] border border-white/10 hover:border-[#33b6ff]/40 transition"
           >
-            {/* TITLE */}
-            <h2 className="text-lg font-semibold">{cls.title}</h2>
 
-            {/* STATS */}
-            <div className="flex gap-4 mt-3 text-sm text-gray-300">
-              <span className="flex items-center gap-1">
-                <Users size={14} /> {cls.students}
-              </span>
-              <span className="flex items-center gap-1">
-                <BookOpen size={14} /> {cls.lessons}
-              </span>
-            </div>
-
-            {/* STATUS + PROGRESS */}
-            <div className="mt-3 flex items-center justify-between">
-              <span
-                className={`text-xs px-2 py-1 rounded-full ${
-                  cls.status === "Active"
-                    ? "bg-green-500/20 text-green-400"
-                    : "bg-yellow-500/20 text-yellow-400"
-                }`}
-              >
-                {cls.status}
-              </span>
-
-              <span className="text-xs text-gray-400">
-                {cls.progress}% complete
-              </span>
-            </div>
-
-            {/* PROGRESS BAR */}
-            <div className="w-full h-2 bg-white/10 rounded mt-2">
-              <div
-                className="h-2 bg-blue-500 rounded"
-                style={{ width: `${cls.progress}%` }}
+            {/* IMAGE */}
+            <div className="h-40 w-full overflow-hidden">
+              <img
+                src={course.image}
+                className="w-full h-full object-cover hover:scale-105 transition duration-500"
               />
             </div>
 
-            {/* ACTIONS */}
-            <div className="flex gap-2 mt-4">
-              {/* VIEW (SAFE LOCAL UI) */}
-              <button
-                onClick={() => setSelectedClass(cls)}
-                className="flex items-center gap-1 text-xs px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 w-full justify-center"
-              >
-                <Eye size={14} /> View
-              </button>
+            {/* CONTENT */}
+            <div className="p-6 space-y-4">
 
-              {/* ANALYSIS → NEW PAGE */}
-              <button
-                onClick={() => navigate(`/mentor/analysis/${cls.id}`)}
-                className="flex items-center gap-1 text-xs px-3 py-2 rounded-lg bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 w-full justify-center"
-              >
-                <BarChart3 size={14} /> Analysis
-              </button>
+              {/* TITLE */}
+              <h2 className="text-xl font-semibold">
+                {course.title}
+              </h2>
 
-              {/* UPLOAD → NEW PAGE */}
-              <button
-                onClick={() => navigate(`/mentor/upload/${cls.id}`)}
-                className="flex items-center gap-1 text-xs px-3 py-2 rounded-lg bg-purple-500/20 text-purple-300 hover:bg-purple-500/30 w-full justify-center"
-              >
-                Upload
-              </button>
+              {/* STUDENTS */}
+              <p className="text-white/60">
+                👨‍🎓 {course.students} students enrolled
+              </p>
+
+              {/* PROGRESS BAR */}
+              <div className="w-full bg-white/10 rounded-full h-2">
+                <div
+                  className="bg-[#33b6ff] h-2 rounded-full"
+                  style={{ width: `${course.progress}%` }}
+                />
+              </div>
+
+              <p className="text-sm text-white/60">
+                📈 Progress: {course.progress}%
+              </p>
+
+              {/* BUTTONS */}
+              <div className="grid grid-cols-2 gap-3 pt-3">
+
+                <button
+  onClick={() => navigate("/mentor/upload")}
+  className="py-2 px-3 rounded-lg bg-white/5 hover:bg-white/10 text-sm transition"
+>
+  📤 Upload Material
+</button>
+
+                <button
+                  onClick={() =>
+                    navigate("/mentor/course-students")
+                  }
+                  className="py-2 px-3 rounded-lg bg-white/5 hover:bg-white/10 text-sm transition"
+                >
+                  👨‍🎓 Students
+                </button>
+
+                <button
+  onClick={() => navigate(`/mentor/course-analysis/${course.id}`)}
+  className="py-2 px-3 rounded-lg bg-white/5 hover:bg-white/10 text-sm transition"
+>
+  📊 Analysis
+</button>
+
+                
+
+              </div>
+
             </div>
-          </div>
+          </motion.div>
         ))}
       </div>
-
-      {/* VIEW PANEL */}
-      {selectedClass && (
-        <div className="mt-6 p-5 rounded-xl bg-white/5 border border-white/10">
-          <h2 className="text-xl font-bold">{selectedClass.title}</h2>
-
-          <div className="mt-3 text-gray-300 space-y-1">
-            <p>Students: {selectedClass.students}</p>
-            <p>Lessons: {selectedClass.lessons}</p>
-            <p>Status: {selectedClass.status}</p>
-            <p>Progress: {selectedClass.progress}%</p>
-          </div>
-
-          <button
-            onClick={() => setSelectedClass(null)}
-            className="mt-4 px-4 py-2 bg-red-500/20 text-red-300 rounded-lg"
-          >
-            Close
-          </button>
-        </div>
-      )}
     </div>
   );
 };
