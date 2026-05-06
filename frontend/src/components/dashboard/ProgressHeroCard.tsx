@@ -1,11 +1,14 @@
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import { PlayCircle } from "lucide-react";
+import { GlassButton } from "@/components/ui/GlassButton";
 
 interface ProgressHeroCardProps {
   stage: string;
   progressPercent: number;
   totalLessons: number;
   completedLessons: number;
+  onStartLearning?: () => void;
 }
 
 export const ProgressHeroCard = ({
@@ -13,6 +16,7 @@ export const ProgressHeroCard = ({
   progressPercent,
   totalLessons,
   completedLessons,
+  onStartLearning,
 }: ProgressHeroCardProps) => {
   const [animatedProgress, setAnimatedProgress] = useState(0);
   const radius = 70;
@@ -100,7 +104,7 @@ export const ProgressHeroCard = ({
             </span>
             <h2 className="text-2xl md:text-3xl font-bold mt-1 mb-4">{stage}</h2>
             
-            <div className="flex flex-wrap gap-4 justify-center md:justify-start">
+            <div className="flex flex-wrap gap-4 justify-center md:justify-start mb-6">
               <div className="glass-inner-glow px-4 py-2 rounded-xl">
                 <span className="text-2xl font-bold text-primary">{completedLessons}</span>
                 <span className="text-sm text-muted-foreground ml-2">Completed</span>
@@ -110,6 +114,26 @@ export const ProgressHeroCard = ({
                 <span className="text-sm text-muted-foreground ml-2">Remaining</span>
               </div>
             </div>
+
+            {/* Start Learning Button */}
+            {onStartLearning && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+              >
+                <GlassButton
+                  variant="primary"
+                  size="lg"
+                  glow
+                  onClick={onStartLearning}
+                  className="px-8 py-4"
+                >
+                  <PlayCircle size={20} className="mr-2" />
+                  Start Learning
+                </GlassButton>
+              </motion.div>
+            )}
           </motion.div>
         </div>
 

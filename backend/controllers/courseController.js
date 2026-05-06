@@ -131,11 +131,77 @@ const adminUpdateCourse = async (req, res) => {
 };
 
 
-module.exports = { createCourse, 
-                  getCourseRoadmap,
-                  adminGetCourses,
-                  adminDeleteCourse,
-                  adminUpdateCourse
+// GET /api/courses - Get all available courses for students
+const getAllCourses = asyncHandler(async (req, res) => {
+  const courses = await Course.find()
+    .populate("instructor", "name email learningProfile")
+    .sort({ createdAt: -1 })
+    .lean();
 
+  // Add lesson count for each course
+  for (let course of courses) {
+    const lessonCount = await Lesson.countDocuments({ course: course._id });
+    course.lessonCount = lessonCount;
+  }
 
- };
+  res.json({
+    success: true,
+    data: courses
+  });
+});
+
+// POST /api/courses/:id/enroll - Enroll student in a course
+const enrollInCourse = asyncHandler(async (req, res) => {
+  const courseId = req.params.id;
+  const userId = req.user._id;
+
+  const course = await Course.findById(courseId);
+  if (!course) {
+    res.status(404);
+    throw new Error("Course not found");
+  }
+
+  // Update user's learning profile with course info
+  const User = require("../models/User");
+  await User.findByIdAndUpdate(userId, {
+    "learningProfile.course": {
+      id: course._id,
+      title: course.title
+    }
+  });
+
+  // Create initial progress record
+  const Progress = require("../models/Progress");
+  let progress = await Progress.findOne({ user: userId, course: courseId });
+  
+  if (!progress) {
+    progress = await Progress.create({
+      user: userId,
+      course: courseId,
+      levelsProgress: [],
+      xpEarned: 0
+    });
+  }
+
+  await logActivity({
+    user: userId,
+    type: "COURSE_ENROLLED",
+    message: `Student enrolled in "${course.title}"`
+  });
+
+  res.json({
+    success: true,
+    message: "Successfully enrolled in course",
+    data: { course, progress }
+  });
+});
+
+module.exports = { 
+  createCourse, 
+  getCourseRoadmap,
+  adminGetCourses,
+  adminDeleteCourse,
+  adminUpdateCourse,
+  getAllCourses,
+  enrollInCourse
+};

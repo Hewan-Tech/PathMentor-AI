@@ -13,6 +13,7 @@ import Dashboard from "./pages/Dashboard";
 import ProfilePage from "./pages/ProfilePage";
 import NotFound from "./pages/NotFound";
 import Lessons from "./pages/Lessons";
+import BrowseCourses from "./pages/BrowseCourses";
 import Leaderboard from "./pages/Leaderboard";
 import Achievements from "./pages/Achievements";
 import Announcements from "./pages/Announcements";
@@ -20,6 +21,10 @@ import StudyBuddies from "./pages/StudyBuddies";
 import Sessions from "./pages/Sessions";
 import ResetPassword from "./pages/ResetPassword";
 import Settings from "./pages/Settings";
+import VideoRoom from "./pages/VideoRoom";
+import StudentProjects from "./pages/StudentProjects";
+import StudyRooms from "./pages/StudyRooms";
+import StudyRoomDetail from "./pages/StudyRoomDetail";
 
 // Mentor Pages
 import MentorDashboard from "./pages/mentor/MentorDashboard";
@@ -32,6 +37,9 @@ import MentorTaskBuilder from "./pages/mentor/MentorTaskBuilder";
 import MentorReviewQueue from "./pages/mentor/MentorReviewQueue";
 import MentorSessions from "./pages/mentor/MentorSessions";
 import MentorAnnouncements from "./pages/mentor/MentorAnnouncements";
+import MentorProjects from "./pages/mentor/MentorProjects";
+import MentorSettings from "./pages/mentor/MentorSettings";
+import MentorChat from "./pages/mentor/MentorChat";
 
 // Admin Pages
 import AdminLayout from "./pages/admin/AdminLayout";
@@ -68,6 +76,7 @@ import Refunds from "./pages/admin/payments/Refunds";
 // Chats
 import Conversations from "./pages/admin/chats/Conversations";
 import SupportTickets from "./pages/admin/chats/SupportTickets";
+import AdminChatPage from "./pages/admin/AdminChatPage";
 
 // Feedback
 import AllFeedback from "./pages/admin/feedback/AllFeedback";
@@ -106,12 +115,17 @@ const App = () => (
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/courses" element={<BrowseCourses />} />
           <Route path="/lessons" element={<Lessons />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/achievements" element={<Achievements />} />
           <Route path="/announcements" element={<Announcements />} />
           <Route path="/study-buddies" element={<StudyBuddies />} />
           <Route path="/sessions" element={<Sessions />} />
+          <Route path="/room/:id" element={<VideoRoom />} />
+          <Route path="/projects" element={<StudentProjects />} />
+          <Route path="/study-rooms" element={<StudyRooms />} />
+          <Route path="/study-rooms/:id" element={<StudyRoomDetail />} />
 
           {/* MENTOR */}
           <Route path="/mentor/pending" element={<MentorPendingApproval />} />
@@ -119,7 +133,10 @@ const App = () => (
           <Route path="/mentor/task/:id" element={<MentorTaskBuilder />} />
           <Route path="/mentor/review" element={<MentorReviewQueue />} />
           <Route path="/mentor/sessions" element={<MentorSessions />} />
+          <Route path="/mentor/chat" element={<MentorChat />} />
           <Route path="/mentor/announcements" element={<MentorAnnouncements />} />
+          <Route path="/mentor/projects" element={<MentorProjects />} />
+          <Route path="/mentor/settings" element={<MentorSettings />} />
 
           {/* MENTOR CLASSES */}
           <Route path="/mentor/classes" element={<MentorClasses />} />
@@ -165,6 +182,7 @@ const App = () => (
             <Route path="refunds" element={<Refunds />} />
 
             {/* Chats */}
+            <Route path="user-chat" element={<AdminChatPage />} />
             <Route path="chats" element={<Conversations />} />
             <Route path="tickets" element={<SupportTickets />} />
 

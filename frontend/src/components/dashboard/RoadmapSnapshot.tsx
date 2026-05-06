@@ -2,7 +2,8 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowRight, Check, Lock, Play } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useRef } from "react";
+import { useRef, useEffect, useState } from "react";
+import api from "@/services/api";
 
 interface Stage {
   id: number;
@@ -11,35 +12,102 @@ interface Stage {
 }
 
 interface RoadmapSnapshotProps {
-  currentStage: number;
+  currentStage?: number;
   stages?: Stage[];
 }
 
-const defaultStages: Stage[] = [
-  { id: 1, name: "Foundations", status: "completed" },
-  { id: 2, name: "Core Concepts", status: "completed" },
-  { id: 3, name: "Intermediate", status: "current" },
-  { id: 4, name: "Advanced", status: "locked" },
-  { id: 5, name: "Projects", status: "locked" },
-  { id: 6, name: "Specialization", status: "locked" },
-  { id: 7, name: "Mastery", status: "locked" },
-];
-
 export const RoadmapSnapshot = ({
   currentStage,
-  stages = defaultStages,
+  stages,
 }: RoadmapSnapshotProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [realStages, setRealStages] = useState<Stage[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const stagesWithStatus = stages.map((stage, index) => ({
-    ...stage,
-    status:
-      index + 1 < currentStage
-        ? "completed"
-        : index + 1 === currentStage
-        ? "current"
-        : "locked",
-  })) as Stage[];
+  useEffect(() => {
+    // If stages are provided as prop, use them
+    if (stages && stages.length > 0) {
+      setRealStages(stages);
+      setLoading(false);
+      return;
+    }
+
+    // Otherwise fetch from backend
+    const fetchRoadmap = async () => {
+      try {
+        const profileRes = await api.get("/users/profile");
+        const courseId = profileRes.data.user?.learningProfile?.course?.id;
+        
+        if (!courseId) {
+          setLoading(false);
+          return;
+        }
+
+        // Get roadmap levels
+        const roadmapRes = await api.get(`/courses/${courseId}/roadmap`);
+        const levels = roadmapRes.data.levels || [];
+
+        // Get unlock status
+        let unlockMap = new Map();
+        try {
+          const unlockRes = await api.get(`/levels/${courseId}/unlock-status`);
+          unlockMap = new Map((unlockRes.data.levels || []).map((l: any) => [l._id, l]));
+        } catch { /* ignore */ }
+
+        // Build stages from real levels
+        const builtStages: Stage[] = levels.map((level: any, idx: number) => {
+          const unlockData = unlockMap.get(level._id);
+          const isUnlocked = unlockData?.isUnlocked ?? (level.order === 1);
+          const completedLessons = unlockData?.completedLessons || 0;
+          const totalLessons = level.lessons?.length || 0;
+          const isCompleted = totalLessons > 0 && completedLessons >= totalLessons;
+
+          let status: "completed" | "current" | "locked" = "locked";
+          if (isCompleted) status = "completed";
+          else if (isUnlocked) status = "current";
+
+          return {
+            id: level.order,
+            name: level.title,
+            status
+          };
+        });
+
+        setRealStages(builtStages);
+      } catch (err) {
+        console.error("Failed to fetch roadmap:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRoadmap();
+  }, [stages]);
+
+  if (loading) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.6 }}
+        className="glass-premium p-6 rounded-3xl mb-8"
+      >
+        <div className="flex items-center justify-center py-8">
+          <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+        </div>
+      </motion.div>
+    );
+  }
+
+  if (realStages.length === 0) {
+    return null;
+  }
+
+  // Calculate current stage from status
+  const currentStageCalc = realStages.findIndex(s => s.status === "current") + 1 || 1;
+  const activeStage = currentStage || currentStageCalc;
+
+  const stagesWithStatus = realStages;
 
   return (
     <motion.div
@@ -124,13 +192,13 @@ export const RoadmapSnapshot = ({
             className="h-full bg-gradient-primary rounded-full"
             initial={{ width: 0 }}
             animate={{
-              width: `${((currentStage - 1) / (stagesWithStatus.length - 1)) * 100}%`,
+              width: `${((activeStage - 1) / (stagesWithStatus.length - 1)) * 100}%`,
             }}
             transition={{ duration: 1, delay: 0.5 }}
           />
         </div>
         <span className="text-sm text-muted-foreground whitespace-nowrap">
-          Stage {currentStage} of {stagesWithStatus.length}
+          Stage {activeStage} of {stagesWithStatus.length}
         </span>
       </div>
     </motion.div>

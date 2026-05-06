@@ -49,3 +49,47 @@ router.get("/my-mentor", guard, async (req, res) => {
 });
 
 module.exports = router;
+
+// GET projects assigned to this student
+router.get("/my-projects", guard, async (req, res) => {
+  try {
+    const Project = require("../models/Project");
+    const projects = await Project.find({
+      assignedTo: req.user._id,
+      status: "active"
+    })
+      .populate("mentor", "name email")
+      .populate("course", "title")
+      .sort({ createdAt: -1 });
+
+    res.json({ success: true, data: projects });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Submit a project
+router.post("/my-projects/:id/submit", guard, async (req, res) => {
+  try {
+    const Project = require("../models/Project");
+    const { description, link } = req.body;
+    const project = await Project.findById(req.params.id);
+    if (!project) return res.status(404).json({ message: "Project not found" });
+
+    const alreadySubmitted = project.submissions.find(
+      s => s.student.toString() === req.user._id.toString()
+    );
+    if (alreadySubmitted) {
+      alreadySubmitted.description = description || alreadySubmitted.description;
+      alreadySubmitted.link        = link || alreadySubmitted.link;
+      alreadySubmitted.submittedAt = new Date();
+    } else {
+      project.submissions.push({ student: req.user._id, description, link });
+    }
+
+    await project.save();
+    res.json({ success: true, message: "Project submitted!" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});

@@ -390,4 +390,133 @@ router.delete("/lesson/:id/attachment", guard, authorize("mentor"), async (req, 
   }
 });
 
+/* ── MY ASSIGNED STUDENTS ───────────────────────────────── */
+router.get("/my-students", guard, authorize("mentor"), async (req, res) => {
+  try {
+    const students = await User.find({ assignedMentor: req.user._id, role: "student" })
+      .select("name email learningProfile.skillTrack learningProfile.experienceLevel")
+      .sort({ createdAt: -1 });
+    res.json({ success: true, data: students });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+/* ── PROJECTS ───────────────────────────────────────────── */
+const Project = require("../models/Project");
+
+// Create project
+router.post("/projects", guard, authorize("mentor"), async (req, res) => {
+  try {
+    const { title, description, instructions, dueDate, assignedTo, courseId } = req.body;
+    if (!title || !description) return res.status(400).json({ message: "Title and description are required" });
+    if (!assignedTo?.length) return res.status(400).json({ message: "Assign to at least one student" });
+
+    const project = await Project.create({
+      title, description, instructions,
+      dueDate: dueDate ? new Date(dueDate) : undefined,
+      mentor: req.user._id,
+      assignedTo,
+      course: courseId || undefined
+    });
+
+    logActivity({ user: req.user._id, type: "LESSON_CREATED", message: `Mentor assigned project "${title}"` }).catch(() => {});
+    res.status(201).json({ success: true, data: project });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Get all projects by this mentor
+router.get("/projects", guard, authorize("mentor"), async (req, res) => {
+  try {
+    const projects = await Project.find({ mentor: req.user._id })
+      .populate("assignedTo", "name email")
+      .populate("course", "title")
+      .sort({ createdAt: -1 });
+    res.json({ success: true, data: projects });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Get single project
+router.get("/projects/:id", guard, authorize("mentor"), async (req, res) => {
+  try {
+    const project = await Project.findById(req.params.id)
+      .populate("assignedTo", "name email learningProfile.skillTrack")
+      .populate("submissions.student", "name email");
+    if (!project) return res.status(404).json({ message: "Project not found" });
+    res.json({ success: true, data: project });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Update project
+router.put("/projects/:id", guard, authorize("mentor"), async (req, res) => {
+  try {
+    const project = await Project.findOneAndUpdate(
+      { _id: req.params.id, mentor: req.user._id },
+      req.body,
+      { new: true }
+    );
+    if (!project) return res.status(404).json({ message: "Project not found" });
+    res.json({ success: true, data: project });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Delete project
+router.delete("/projects/:id", guard, authorize("mentor"), async (req, res) => {
+  try {
+    await Project.findOneAndDelete({ _id: req.params.id, mentor: req.user._id });
+    res.json({ success: true, message: "Project deleted" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Grade a submission
+router.put("/projects/:id/grade/:studentId", guard, authorize("mentor"), async (req, res) => {
+  try {
+    const { grade, feedback, status } = req.body;
+    const project = await Project.findById(req.params.id);
+    if (!project) return res.status(404).json({ message: "Project not found" });
+
+    const sub = project.submissions.find(s => s.student.toString() === req.params.studentId);
+    if (!sub) return res.status(404).json({ message: "Submission not found" });
+
+    if (grade)    sub.grade    = grade;
+    if (feedback) sub.feedback = feedback;
+    if (status)   sub.status   = status;
+    await project.save();
+
+    res.json({ success: true, data: project });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+/* ── MENTOR PROFILE UPDATE ──────────────────────────────── */
+router.put("/profile", guard, authorize("mentor"), async (req, res) => {
+  try {
+    const { name, skillTrack, experienceLevel, commitmentTime, learningStyle, learningGoal, bio } = req.body;
+    const updates = {};
+    if (name) updates.name = name;
+    if (skillTrack)      updates["learningProfile.skillTrack"]      = skillTrack;
+    if (experienceLevel) updates["learningProfile.experienceLevel"] = experienceLevel;
+    if (commitmentTime)  updates["learningProfile.commitmentTime"]  = commitmentTime;
+    if (learningStyle)   updates["learningProfile.learningStyle"]   = learningStyle;
+    if (learningGoal)    updates["learningProfile.learningGoal"]    = learningGoal;
+    if (bio)             updates["learningProfile.personalGoal"]    = bio;
+
+    const updated = await User.findByIdAndUpdate(req.user._id, { $set: updates }, { new: true }).select("-password");
+    res.json({ success: true, user: updated });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 module.exports = router;

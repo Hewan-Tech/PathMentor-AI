@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, BookOpen, BarChart3, Upload,
   ClipboardList, Calendar, Users, HelpCircle,
-  ChevronLeft, LogOut, Settings, Bell
+  ChevronLeft, LogOut, Settings, Bell, FolderKanban, MessageSquare
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -13,9 +13,12 @@ const navItems = [
   { icon: BookOpen,        label: "My Classes",     path: "/mentor/classes" },
   { icon: Upload,          label: "Upload Content", path: "/mentor/upload/general" },
   { icon: HelpCircle,      label: "Quiz Builder",   path: "/mentor/task/general" },
+  { icon: FolderKanban,    label: "Projects",       path: "/mentor/projects" },
   { icon: ClipboardList,   label: "Review Queue",   path: "/mentor/review" },
   { icon: Calendar,        label: "Sessions",       path: "/mentor/sessions" },
+  { icon: MessageSquare,   label: "Messages",       path: "/mentor/chat" },
   { icon: Bell,            label: "Announcements",  path: "/mentor/announcements" },
+  { icon: Settings,        label: "Settings",       path: "/mentor/settings" },
 ];
 
 interface MentorSidebarProps {
@@ -118,13 +121,6 @@ export const MentorSidebar = ({
             <p className="text-xs text-muted-foreground truncate">{userEmail}</p>
           </div>
         )}
-        <button
-          onClick={() => handleNav("/mentor/dashboard")}
-          className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-muted-foreground hover:bg-foreground/5 hover:text-foreground transition-all text-sm"
-        >
-          <Settings size={17} className="shrink-0" />
-          {!isCollapsed && <span>Settings</span>}
-        </button>
         <button
           onClick={onSignOut}
           className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-red-400 hover:bg-red-500/10 transition-all text-sm"

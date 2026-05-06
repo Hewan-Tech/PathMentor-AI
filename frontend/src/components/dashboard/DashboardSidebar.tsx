@@ -37,7 +37,7 @@ export const DashboardSidebar = ({
 
   const normalNavItems = [
     { icon: LayoutDashboard, label: "Dashboard",     id: "dashboard" },
-    { icon: BookOpen,        label: "My Courses",    id: "courses" },
+    { icon: BookOpen,        label: "My Courses",    id: "lessons" },
     { icon: BarChart,        label: "Progress",      id: "progress" },
     { icon: Trophy,          label: "Leaderboard",   id: "leaderboard" },
     { icon: Award,           label: "Achievements",  id: "achievements" },

@@ -8,11 +8,19 @@ import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { MobileBottomNav } from "@/components/dashboard/MobileBottomNav";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { GlassButton } from "@/components/ui/GlassButton";
-import { Calendar, Clock, Star, X, Video } from "lucide-react";
+import { Calendar, Clock, Star, X, Video, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface Mentor { _id: string; name: string; email: string; learningProfile?: { skillTrack?: string }; }
-interface Session { _id: string; mentorId: { _id: string; name: string; email: string; learningProfile?: { skillTrack?: string } }; date: string; status: "scheduled" | "completed" | "cancelled"; summary?: string; studentRating?: number; }
+interface Session {
+  _id: string;
+  mentorId: { _id: string; name: string; email: string; learningProfile?: { skillTrack?: string } };
+  date: string;
+  status: "scheduled" | "completed" | "cancelled";
+  summary?: string;
+  studentRating?: number;
+  meetingLink?: string;
+}
 
 import { handleSidebarNav } from "@/lib/navHelper";
 
@@ -157,7 +165,23 @@ const Sessions = () => {
                         </div>
                         <div className="flex flex-col items-end gap-2 shrink-0">
                           <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${statusColors[session.status]}`}>{session.status.toUpperCase()}</span>
-                          {session.status === "scheduled" && <button onClick={() => handleCancel(session._id)} className="text-xs text-red-400 hover:text-red-300">Cancel</button>}
+                          {session.status === "scheduled" && (
+                            <>
+                              {/* Join call button — available 15 min before */}
+                              {(() => {
+                                const minsUntil = Math.round((new Date(session.date).getTime() - Date.now()) / 60000);
+                                return minsUntil <= 15 && minsUntil > -60 ? (
+                                  <button
+                                    onClick={() => navigate(`/room/${session._id}`)}
+                                    className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl bg-primary text-black hover:bg-primary/90 transition-all"
+                                  >
+                                    <Video size={13} /> Join Call
+                                  </button>
+                                ) : null;
+                              })()}
+                              <button onClick={() => handleCancel(session._id)} className="text-xs text-red-400 hover:text-red-300">Cancel</button>
+                            </>
+                          )}
                           {session.status === "completed" && !session.studentRating && <button onClick={() => setRatingSessionId(session._id)} className="text-xs text-primary flex items-center gap-1"><Star size={12} /> Rate</button>}
                           {session.studentRating && <div className="flex items-center gap-0.5 text-yellow-400 text-xs">{Array.from({ length: session.studentRating }).map((_, i) => <Star key={i} size={12} fill="currentColor" />)}</div>}
                         </div>

@@ -8,7 +8,7 @@ import { MentorSidebar } from "@/components/mentor/MentorSidebar";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { GlassButton } from "@/components/ui/GlassButton";
 import { useToast } from "@/hooks/use-toast";
-import { Calendar, Clock, User, CheckCircle2, X, Star, MessageSquare } from "lucide-react";
+import { Calendar, Clock, User, CheckCircle2, X, Star, MessageSquare, Video } from "lucide-react";
 
 interface Session {
   _id: string;
@@ -19,6 +19,7 @@ interface Session {
   feedback?: string;
   studentRating?: number;
   studentComment?: string;
+  meetingLink?: string;
 }
 
 const statusColors = {
@@ -164,6 +165,24 @@ const MentorSessions = () => {
                       </span>
                       {session.status === "scheduled" && (
                         <div className="flex gap-2">
+                          {/* Start call — available 15 min before */}
+                          {(() => {
+                            const minsUntil = Math.round((new Date(session.date).getTime() - Date.now()) / 60000);
+                            return minsUntil <= 15 && minsUntil > -60 ? (
+                              <button
+                                onClick={() => navigate(`/room/${session._id}`)}
+                                className="flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-xl bg-primary text-black hover:bg-primary/90 transition-all"
+                              >
+                                <Video size={13} /> Start Call
+                              </button>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">
+                                {Math.round((new Date(session.date).getTime() - Date.now()) / 60000) > 0
+                                  ? `In ${Math.round((new Date(session.date).getTime() - Date.now()) / 60000)}m`
+                                  : ""}
+                              </span>
+                            );
+                          })()}
                           <button onClick={() => setCompletingId(session._id)}
                             className="flex items-center gap-1 text-xs text-green-400 hover:text-green-300 transition-colors">
                             <CheckCircle2 size={13} /> Complete

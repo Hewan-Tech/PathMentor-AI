@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
+import { initSocket } from "@/services/socket";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { 
   LayoutDashboard, Users, UserCheck, BarChart3, 
   DollarSign, Star, GraduationCap, Clock, 
@@ -27,6 +29,11 @@ const AdminLayout = () => {
   const profileRef = useRef<HTMLDivElement>(null);
 
   const isActive = (path: string) => location.pathname === path;
+
+  // Initialize socket for real-time notifications
+  useEffect(() => {
+    initSocket();
+  }, []);
 
   // Integrated Sign Out logic
   const handleLogout = () => {
@@ -95,6 +102,7 @@ const AdminLayout = () => {
     {
       title: "Chats & Support",
       items: [
+        { icon: MessageCircle, label: "User Messages", path: "/admin/user-chat" },
         { icon: MessageCircle, label: "Conversations", path: "/admin/chats" },
         { icon: Ticket, label: "Support Tickets", path: "/admin/tickets" },
       ]
@@ -201,10 +209,7 @@ const AdminLayout = () => {
           </div>
 
           <div className="flex items-center gap-6">
-            <button className="relative text-slate-400 hover:text-white transition-colors">
-              <Bell size={20} />
-              <div className="absolute top-0 right-0 w-2 h-2 bg-cyan-400 rounded-full border-2 border-[#020617]" />
-            </button>
+            <NotificationBell />
 
             <div className="h-8 w-[1px] bg-white/10" />
 

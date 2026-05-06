@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import api from "@/services/api";
+import { initSocket } from "@/services/socket";
 import { PersonaType } from "@/lib/registrationTypes";
 import { ParticlesBackground } from "@/components/landing/ParticlesBackground";
 import { DashboardTopNav } from "@/components/dashboard/DashboardTopNav";
@@ -13,6 +14,9 @@ import { SkillGrowthChart } from "@/components/dashboard/SkillGrowthChart";
 import { StatsGrid } from "@/components/dashboard/StatsGrid";
 import { RoadmapSnapshot } from "@/components/dashboard/RoadmapSnapshot";
 import { AIMentorOrb } from "@/components/dashboard/AIMentorOrb";
+import { DailyMotivation } from "@/components/dashboard/DailyMotivation";
+import { WeeklyGrowthReport } from "@/components/dashboard/WeeklyGrowthReport";
+import { SmartReminder } from "@/components/dashboard/SmartReminder";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { GlassButton } from "@/components/ui/GlassButton";
 import { 
@@ -59,6 +63,9 @@ const Dashboard = () => {
     const token = localStorage.getItem("token");
     if (!token) { navigate("/auth"); return; }
 
+    // Initialize socket for real-time notifications
+    initSocket();
+
     const fetchUser = async () => {
       try {
         const res = await api.get("/users/profile");
@@ -79,6 +86,12 @@ const Dashboard = () => {
           });
         }
         if (userData.recommendedLessons) setLessons(userData.recommendedLessons);
+
+        // Fetch assigned mentor
+        try {
+          const mentorRes = await api.get("/users/my-mentor");
+          setAssignedMentor(mentorRes.data.mentor);
+        } catch { /* mentor fetch is non-critical */ }
       } catch (error) {
         localStorage.removeItem("token");
         navigate("/auth");
@@ -123,7 +136,8 @@ const Dashboard = () => {
         activeView={activeView}
         onViewChange={(view) => {
           // Dedicated pages — navigate away
-          if (view === "courses")       { navigate("/lessons");       return; }
+          if (view === "lessons")       { navigate("/lessons");       return; }
+          if (view === "courses")       { navigate("/courses");       return; }
           if (view === "leaderboard")   { navigate("/leaderboard");   return; }
           if (view === "achievements")  { navigate("/achievements");  return; }
           if (view === "announcements") { navigate("/announcements"); return; }
@@ -131,7 +145,8 @@ const Dashboard = () => {
           if (view === "sessions")      { navigate("/sessions");      return; }
           if (view === "profile")       { navigate("/profile");       return; }
           if (view === "settings")      { navigate("/settings");      return; }
-          // In-page views (dashboard, progress, projects)
+          if (view === "projects")      { navigate("/projects");      return; }
+          // In-page views (dashboard, progress)
           setActiveView(view);
         }}
         pendingMode={user?.status === 'pending'}
@@ -145,9 +160,85 @@ const Dashboard = () => {
             {activeView === "dashboard" && (
               <motion.div key="dash" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
                 <WelcomeSection userName={userName} personaType={preferences?.persona_type} />
+                
+                {/* Smart Reminder Banner */}
+                <SmartReminder />
+
                 <div className="space-y-8 mt-6">
                   <StatsGrid inProgress={lessons.length - completedLessonsCount} completed={completedLessonsCount} dailyGoal={preferences?.lesson_length || "1h"} learningStyle={preferences?.learning_style || "Visual"} />
-                  <ProgressHeroCard stage={preferences?.starting_stage || "Beginner"} progressPercent={Math.round((completedLessonsCount / (lessons.length || 1)) * 100)} totalLessons={lessons.length} completedLessons={completedLessonsCount} />
+                  
+                  {/* Daily Motivation + Weekly Growth Report */}
+                  <div className="grid lg:grid-cols-2 gap-6">
+                    <DailyMotivation />
+                    <WeeklyGrowthReport />
+                  </div>
+
+                  <ProgressHeroCard 
+                    stage={preferences?.starting_stage || "Beginner"} 
+                    progressPercent={Math.round((completedLessonsCount / (lessons.length || 1)) * 100)} 
+                    totalLessons={lessons.length} 
+                    completedLessons={completedLessonsCount}
+                    onStartLearning={() => {
+                      if (user?.learningProfile?.course?.id) {
+                        navigate("/lessons");
+                      } else {
+                        navigate("/courses");
+                      }
+                    }}
+                  />
+
+                  {/* ── Assigned Mentor Card ── */}
+                  <GlassCard className="p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-bold text-lg flex items-center gap-2">
+                        <User size={18} className="text-primary" /> Your Mentor
+                      </h3>
+                      {assignedMentor && (
+                        <button
+                          onClick={() => navigate("/sessions")}
+                          className="text-xs text-primary hover:underline flex items-center gap-1"
+                        >
+                          <Calendar size={12} /> Book Session
+                        </button>
+                      )}
+                    </div>
+
+                    {assignedMentor ? (
+                      <div className="flex items-center gap-4">
+                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-2xl font-bold text-black shrink-0">
+                          {assignedMentor.name?.[0]?.toUpperCase()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-bold text-lg truncate">{assignedMentor.name}</p>
+                          <p className="text-sm text-muted-foreground">{assignedMentor.skillTrack}</p>
+                          <div className="flex items-center gap-3 mt-1.5 flex-wrap">
+                            {assignedMentor.avgRating && (
+                              <span className="flex items-center gap-1 text-xs text-amber-400 font-bold">
+                                <Star size={11} fill="currentColor" /> {assignedMentor.avgRating} ({assignedMentor.reviewCount} reviews)
+                              </span>
+                            )}
+                            <span className="text-xs text-muted-foreground">
+                              {assignedMentor.studentCount}/20 students
+                            </span>
+                          </div>
+                        </div>
+                        <GlassButton variant="secondary" size="sm" onClick={() => navigate("/sessions")}>
+                          <MessageSquare size={14} /> Message
+                        </GlassButton>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-4 text-muted-foreground">
+                        <div className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center shrink-0">
+                          <User size={24} className="opacity-40" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-foreground">No mentor assigned yet</p>
+                          <p className="text-sm">A mentor will be assigned based on your skill track and level.</p>
+                        </div>
+                      </div>
+                    )}
+                  </GlassCard>
+
                   <div className="grid lg:grid-cols-2 gap-8">
                     <RoadmapSnapshot currentStage={1} />
                     <SkillGrowthChart />
@@ -275,25 +366,26 @@ const Dashboard = () => {
             {/* --- PROJECTS VIEW --- */}
             {activeView === "projects" && (
               <motion.div key="projects" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-6">
-                <div>
-                  <h2 className="text-3xl font-bold mb-1">Projects</h2>
-                  <p className="text-muted-foreground">Practical projects to apply your skills</p>
-                </div>
-                <GlassCard className="p-12 text-center">
-                  <div className="w-16 h-16 rounded-2xl bg-primary/20 flex items-center justify-center mx-auto mb-4">
-                    <Star size={32} className="text-primary" />
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-3xl font-bold mb-1">Projects</h2>
+                    <p className="text-muted-foreground">Practical projects assigned by your mentor</p>
                   </div>
-                  <h3 className="text-xl font-bold mb-2">Projects Coming Soon</h3>
-                  <p className="text-muted-foreground max-w-md mx-auto">
-                    Hands-on projects will be assigned as you progress through your learning levels.
-                    Complete more lessons to unlock project challenges.
+                  <GlassButton variant="primary" onClick={() => navigate("/projects")}>
+                    View All Projects <ArrowRight size={16} />
+                  </GlassButton>
+                </div>
+                <GlassCard className="p-8 text-center border-primary/20">
+                  <div className="w-14 h-14 rounded-2xl bg-primary/20 flex items-center justify-center mx-auto mb-4">
+                    <Star size={28} className="text-primary" />
+                  </div>
+                  <h3 className="text-xl font-bold mb-2">Your Projects</h3>
+                  <p className="text-muted-foreground max-w-md mx-auto mb-6">
+                    Your mentor assigns hands-on projects to help you apply what you've learned.
+                    Submit your work and get graded feedback.
                   </p>
-                  <GlassButton
-                    variant="primary"
-                    className="mt-6"
-                    onClick={() => navigate("/lessons")}
-                  >
-                    Continue Learning <ArrowRight size={16} />
+                  <GlassButton variant="primary" onClick={() => navigate("/projects")}>
+                    Open Projects <ArrowRight size={16} />
                   </GlassButton>
                 </GlassCard>
               </motion.div>

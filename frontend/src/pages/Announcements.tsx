@@ -24,7 +24,7 @@ const categoryColors: Record<string, string> = {
   News: "bg-orange-500/20 text-orange-300",
 };
 
-const Announcements = () => {
+ const Announcements = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);

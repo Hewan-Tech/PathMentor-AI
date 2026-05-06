@@ -1,7 +1,8 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { Bell, User, Menu, Sparkles, Settings, Save, Camera, X, LogOut } from "lucide-react";
+import { User, Menu, Sparkles, Settings, Save, Camera, X, LogOut } from "lucide-react";
 import { useState, useRef } from "react";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,7 +26,6 @@ interface DashboardTopNavProps {
   userEmail: string;
   onSignOut: () => void;
   onMenuToggle: () => void;
-  hasNotifications?: boolean;
 }
 
 export const DashboardTopNav = ({
@@ -33,7 +33,6 @@ export const DashboardTopNav = ({
   userEmail,
   onSignOut,
   onMenuToggle,
-  hasNotifications = true,
 }: DashboardTopNavProps) => {
   const [aiActive] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -101,15 +100,7 @@ export const DashboardTopNav = ({
             <span className="text-xs text-muted-foreground">AI Active</span>
           </motion.div>
 
-          <motion.button
-            className="relative p-2.5 rounded-xl hover:bg-foreground/10 transition-colors"
-            whileHover={{ scale: 1.05 }}
-          >
-            <Bell className="w-5 h-5 text-foreground" />
-            {hasNotifications && (
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-accent notification-glow" />
-            )}
-          </motion.button>
+          <NotificationBell />
 
           {/* User Avatar Dropdown & Modal Wrapper */}
           <Dialog>

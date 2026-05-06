@@ -5,6 +5,7 @@ const Achievement = require("../models/Achievement");
 const Course = require("../models/Course");
 const User = require("../models/User");
 const asyncHandler = require("../middleware/asyncHandler");
+const { createNotification } = require("./notificationController");
 
 
 
@@ -42,13 +43,26 @@ const createAchievementIfNotExists = async (userId, title, description) => {
   });
 
   if (!exists) {
-    await Achievement.create({
+    const achievement = await Achievement.create({
       user: userId,
       title,
       description
     });
+
+    // Send notification
+    await createNotification({
+      userId,
+      type: "achievement",
+      title: "New Achievement Unlocked! 🎉",
+      message: `You earned "${title}": ${description}`,
+      link: "/achievements",
+      icon: "trophy"
+    });
+
+    return achievement;
   }
 
+  return null;
 };
 
 
@@ -382,6 +396,161 @@ const getUserStreak = asyncHandler(async (req, res) => {
 
 /*
 ========================================
+DAILY MOTIVATION ENGINE
+GET /api/progress/motivation
+========================================
+*/
+const getDailyMotivation = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+  const user = await User.findById(userId).select("streak");
+  const progresses = await Progress.find({ user: userId });
+
+  let totalXP = 0;
+  let totalCompletedLessons = 0;
+  progresses.forEach(p => {
+    totalXP += p.xpEarned;
+    p.levelsProgress.forEach(lp => {
+      totalCompletedLessons += lp.completedLessons.length;
+    });
+  });
+
+  const streak = user?.streak?.current || 0;
+  const longestStreak = user?.streak?.longest || 0;
+
+  // Generate motivational message
+  let message = "Keep learning! You're doing great.";
+  let type = "neutral"; // neutral, positive, warning
+
+  if (streak >= 7) {
+    message = `🔥 Amazing! ${streak}-day streak! You're on fire!`;
+    type = "positive";
+  } else if (streak >= 3) {
+    message = `Great job! ${streak} days in a row. Keep it up!`;
+    type = "positive";
+  } else if (streak === 0 && longestStreak > 0) {
+    message = `⚠️ Your streak is at risk! Study today to keep your momentum.`;
+    type = "warning";
+  } else if (totalCompletedLessons >= 10) {
+    message = `You've completed ${totalCompletedLessons} lessons! You're making excellent progress.`;
+    type = "positive";
+  } else if (totalXP >= 100) {
+    message = `You've earned ${totalXP} XP! Keep climbing the leaderboard.`;
+    type = "positive";
+  }
+
+  res.json({
+    success: true,
+    motivation: {
+      message,
+      type,
+      streak,
+      totalXP,
+      totalLessons: totalCompletedLessons
+    }
+  });
+});
+
+/*
+========================================
+WEEKLY GROWTH REPORT
+GET /api/progress/weekly-report
+========================================
+*/
+const getWeeklyReport = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+  const oneWeekAgo = new Date();
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+  // Get achievements earned this week
+  const weeklyAchievements = await Achievement.find({
+    user: userId,
+    earnedAt: { $gte: oneWeekAgo }
+  });
+
+  // Get all progress to calculate weekly stats
+  const progresses = await Progress.find({ user: userId });
+  
+  let totalXP = 0;
+  let totalLessons = 0;
+  let completedLevels = 0;
+
+  progresses.forEach(p => {
+    totalXP += p.xpEarned;
+    p.levelsProgress.forEach(lp => {
+      totalLessons += lp.completedLessons.length;
+      if (lp.isCompleted) completedLevels++;
+    });
+  });
+
+  // Estimate hours (rough: 1 lesson = 30 min)
+  const estimatedHours = Math.round((totalLessons * 0.5) * 10) / 10;
+
+  // Topics mastered = completed levels
+  const topicsMastered = completedLevels;
+
+  res.json({
+    success: true,
+    report: {
+      hoursStudied: estimatedHours,
+      topicsMastered,
+      xpEarned: totalXP,
+      lessonsCompleted: totalLessons,
+      achievementsEarned: weeklyAchievements.length,
+      weekStart: oneWeekAgo.toISOString(),
+      weekEnd: new Date().toISOString()
+    }
+  });
+});
+
+/*
+========================================
+SMART REMINDER SYSTEM
+GET /api/progress/reminder
+========================================
+*/
+const getSmartReminder = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+  const user = await User.findById(userId).select("streak updatedAt");
+  
+  const streak = user?.streak?.current || 0;
+  const lastActivity = user?.updatedAt || new Date();
+  const hoursSinceActivity = Math.floor((Date.now() - new Date(lastActivity).getTime()) / (1000 * 60 * 60));
+
+  let reminder = null;
+
+  // Streak at risk
+  if (streak > 0 && hoursSinceActivity >= 20) {
+    reminder = {
+      type: "streak_risk",
+      message: `⚠️ Your ${streak}-day streak is at risk! Study today to keep it alive.`,
+      urgency: "high"
+    };
+  }
+  // Inactive for 2+ days
+  else if (hoursSinceActivity >= 48) {
+    reminder = {
+      type: "inactive",
+      message: "You haven't studied in 2 days. Let's get back on track!",
+      urgency: "medium"
+    };
+  }
+  // Inactive for 1 day
+  else if (hoursSinceActivity >= 24) {
+    reminder = {
+      type: "daily_nudge",
+      message: "Ready to continue your learning journey today?",
+      urgency: "low"
+    };
+  }
+
+  res.json({
+    success: true,
+    reminder
+  });
+});
+
+/*
+========================================
 EXPORT
 ========================================
 */
@@ -392,5 +561,8 @@ module.exports = {
   getUserXP,
   getPlatformAnalytics,
   getUserAchievements,
-  getUserStreak
+  getUserStreak,
+  getDailyMotivation,
+  getWeeklyReport,
+  getSmartReminder
 };

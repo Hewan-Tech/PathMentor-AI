@@ -24,7 +24,17 @@ const bookSession = asyncHandler(async (req, res) => {
   });
   if (conflict) return res.status(400).json({ message: "Mentor is not available at that time" });
 
-  const session = await Session.create({ studentId: req.user._id, mentorId, date: sessionDate, status: "scheduled" });
+  // Auto-generate a Jitsi meeting room name (unique per session)
+  const roomName = `pathmentor-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const meetingLink = `https://meet.jit.si/${roomName}`;
+
+  const session = await Session.create({
+    studentId: req.user._id,
+    mentorId,
+    date: sessionDate,
+    status: "scheduled",
+    meetingLink
+  });
 
   logActivity({ user: req.user._id, type: "SESSION_BOOKED", message: `${req.user.name} booked a session with ${mentor.name}` }).catch(() => {});
 

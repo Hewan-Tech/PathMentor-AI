@@ -173,7 +173,7 @@ const Lessons = () => {
         onClose={() => setSidebarOpen(false)}
         isCollapsed={sidebarCollapsed}
         onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
-        activeView="courses"
+        activeView="lessons"
         onViewChange={(v) => handleSidebarNav(v, navigate)}
       />
 

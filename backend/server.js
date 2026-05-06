@@ -24,6 +24,8 @@ const mentorRoutes = require("./routes/mentorRoutes");
 const matchRoutes = require("./routes/matchRoutes");
 const sessionRoutes = require("./routes/sessionRoutes");
 const messageRoutes = require("./routes/messageRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
+const studyRoomRoutes = require("./routes/studyRoomRoutes");
 
 const PORT = process.env.PORT || 5001;
 
@@ -82,6 +84,8 @@ app.use("/api/mentor", mentorRoutes);
 app.use("/api/match", matchRoutes);
 app.use("/api/sessions", sessionRoutes);
 app.use("/api/messages", messageRoutes);
+app.use("/api/notifications", notificationRoutes);
+app.use("/api/study-rooms", studyRoomRoutes);
 
 app.use(errorHandler);
 
@@ -100,15 +104,27 @@ const io = new Server(http, {
 
 app.set("io", io);
 
+// Make io globally available for notifications
+global.io = io;
+
 io.on("connection", (socket) => {
   console.log("socket connected:", socket.id);
 
+  // Join user-specific room for notifications
+  const userId = socket.handshake.auth?.userId;
+  if (userId) {
+    socket.join(`user-${userId}`);
+    console.log(`User ${userId} joined their notification room`);
+  }
+
   socket.on("join", (room) => {
     socket.join(room);
+    console.log(`Socket ${socket.id} joined room: ${room}`);
   });
 
   socket.on("leave", (room) => {
     socket.leave(room);
+    console.log(`Socket ${socket.id} left room: ${room}`);
   });
 
   socket.on("sendMessage", async (payload) => {

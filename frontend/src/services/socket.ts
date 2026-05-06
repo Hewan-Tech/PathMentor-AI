@@ -5,9 +5,21 @@ let socket: Socket | null = null;
 export const initSocket = () => {
   if (socket) return socket;
   const token = localStorage.getItem("token");
+  
+  // Extract userId from token (simple decode, not verification)
+  let userId = null;
+  if (token) {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      userId = payload._id || payload.id;
+    } catch (e) {
+      console.error("Failed to decode token:", e);
+    }
+  }
+  
   socket = io("http://localhost:5001", {
     transports: ["websocket"],
-    auth: { token },
+    auth: { token, userId },
   });
   return socket;
 };

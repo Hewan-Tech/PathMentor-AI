@@ -121,6 +121,43 @@ const completeProfile = async (req, res) => {
           .filter(Boolean)
       : [];
 
+    // Find course based on skillTrack
+    const Course = require("../models/Course");
+    let courseData = null;
+    
+    if (skillTrack) {
+      // Try to find a course that matches the skill track
+      const course = await Course.findOne({
+        $or: [
+          { title: new RegExp(skillTrack, "i") },
+          { category: new RegExp(skillTrack, "i") }
+        ]
+      });
+
+      if (course) {
+        courseData = {
+          id: course._id,
+          title: course.title
+        };
+
+        // Create initial progress record
+        const Progress = require("../models/Progress");
+        const existingProgress = await Progress.findOne({
+          user: user._id,
+          course: course._id
+        });
+
+        if (!existingProgress) {
+          await Progress.create({
+            user: user._id,
+            course: course._id,
+            levelsProgress: [],
+            xpEarned: 0
+          });
+        }
+      }
+    }
+
     user.learningProfile = {
       skillTrack,
       experienceLevel,
@@ -131,6 +168,8 @@ const completeProfile = async (req, res) => {
       persona,
       strengths: strengthsArray,
       recommendation,
+      course: courseData,
+      courseLevel: experienceLevel
     };
 
     user.onboardingCompleted = true;
@@ -157,6 +196,7 @@ const completeProfile = async (req, res) => {
     res.status(200).json({
       message: "Profile completed successfully",
       documents: user.mentorVerification.documents,
+      course: courseData,
       assignedMentor: assignedMentorData
         ? { _id: assignedMentorData._id, name: assignedMentorData.name }
         : null
