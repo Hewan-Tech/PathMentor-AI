@@ -60,8 +60,8 @@ const reviewQueue = [
 const MentorDashboard = () => {
   const navigate = useNavigate();
 
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true); // 👈 START OPEN ON PC
+const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showReviews, setShowReviews] = useState(false);
 
