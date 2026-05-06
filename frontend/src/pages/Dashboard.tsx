@@ -17,7 +17,8 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { GlassButton } from "@/components/ui/GlassButton";
 import { 
   ArrowRight, Sparkles, CheckCircle2, Moon, Sun, 
-  Bell, Shield, Monitor, PlayCircle, BookOpen, Clock, Star
+  Bell, Shield, Monitor, PlayCircle, BookOpen, Clock, Star,
+  User, Calendar, MessageSquare
 } from "lucide-react";
 
 interface UserPreferences {
@@ -52,6 +53,7 @@ const Dashboard = () => {
   const [lessons, setLessons] = useState<RecommendedLesson[]>([]);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [assignedMentor, setAssignedMentor] = useState<any>(null);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -119,7 +121,19 @@ const Dashboard = () => {
         isCollapsed={sidebarCollapsed}
         onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
         activeView={activeView}
-        onViewChange={setActiveView}
+        onViewChange={(view) => {
+          // Dedicated pages — navigate away
+          if (view === "courses")       { navigate("/lessons");       return; }
+          if (view === "leaderboard")   { navigate("/leaderboard");   return; }
+          if (view === "achievements")  { navigate("/achievements");  return; }
+          if (view === "announcements") { navigate("/announcements"); return; }
+          if (view === "community")     { navigate("/study-buddies"); return; }
+          if (view === "sessions")      { navigate("/sessions");      return; }
+          if (view === "profile")       { navigate("/profile");       return; }
+          if (view === "settings")      { navigate("/settings");      return; }
+          // In-page views (dashboard, progress, projects)
+          setActiveView(view);
+        }}
         pendingMode={user?.status === 'pending'}
       />
 
@@ -227,9 +241,61 @@ const Dashboard = () => {
 
             {/* --- PROGRESS VIEW --- */}
             {activeView === "progress" && (
-              <motion.div key="progress" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                 <h2 className="text-3xl font-bold mb-6">Learning Progress</h2>
-                 <SkillGrowthChart />
+              <motion.div key="progress" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-8">
+                <div>
+                  <h2 className="text-3xl font-bold mb-1">Learning Progress</h2>
+                  <p className="text-muted-foreground">Your weekly activity and skill growth</p>
+                </div>
+                <SkillGrowthChart />
+                <ProgressHeroCard
+                  stage={preferences?.starting_stage || "Beginner"}
+                  progressPercent={Math.round((completedLessonsCount / (lessons.length || 1)) * 100)}
+                  totalLessons={lessons.length}
+                  completedLessons={completedLessonsCount}
+                />
+                <div className="grid sm:grid-cols-3 gap-4">
+                  <GlassCard className="p-5 text-center">
+                    <p className="text-3xl font-bold text-primary">{completedLessonsCount}</p>
+                    <p className="text-sm text-muted-foreground mt-1">Lessons Completed</p>
+                  </GlassCard>
+                  <GlassCard className="p-5 text-center">
+                    <p className="text-3xl font-bold text-yellow-400">{lessons.length - completedLessonsCount}</p>
+                    <p className="text-sm text-muted-foreground mt-1">Lessons Remaining</p>
+                  </GlassCard>
+                  <GlassCard className="p-5 text-center">
+                    <p className="text-3xl font-bold text-green-400">
+                      {Math.round((completedLessonsCount / (lessons.length || 1)) * 100)}%
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-1">Overall Progress</p>
+                  </GlassCard>
+                </div>
+              </motion.div>
+            )}
+
+            {/* --- PROJECTS VIEW --- */}
+            {activeView === "projects" && (
+              <motion.div key="projects" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-6">
+                <div>
+                  <h2 className="text-3xl font-bold mb-1">Projects</h2>
+                  <p className="text-muted-foreground">Practical projects to apply your skills</p>
+                </div>
+                <GlassCard className="p-12 text-center">
+                  <div className="w-16 h-16 rounded-2xl bg-primary/20 flex items-center justify-center mx-auto mb-4">
+                    <Star size={32} className="text-primary" />
+                  </div>
+                  <h3 className="text-xl font-bold mb-2">Projects Coming Soon</h3>
+                  <p className="text-muted-foreground max-w-md mx-auto">
+                    Hands-on projects will be assigned as you progress through your learning levels.
+                    Complete more lessons to unlock project challenges.
+                  </p>
+                  <GlassButton
+                    variant="primary"
+                    className="mt-6"
+                    onClick={() => navigate("/lessons")}
+                  >
+                    Continue Learning <ArrowRight size={16} />
+                  </GlassButton>
+                </GlassCard>
               </motion.div>
             )}
 

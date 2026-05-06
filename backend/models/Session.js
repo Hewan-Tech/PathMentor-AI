@@ -21,10 +21,21 @@ const sessionSchema = new mongoose.Schema(
     },
 
     meetingLink: String,
-
     summary: String,
-
     feedback: String,
+
+    // Student rating after session
+    studentRating: {
+      type: Number,
+      min: 1,
+      max: 5,
+      default: null,
+    },
+
+    studentComment: {
+      type: String,
+      default: "",
+    },
   },
   { timestamps: true }
 );

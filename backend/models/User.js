@@ -50,6 +50,23 @@ const userSchema=new mongoose.Schema(
              type: Boolean,
             default: false
      },
+     // Assigned mentor (for students)
+     assignedMentor: {
+       type: mongoose.Schema.Types.ObjectId,
+       ref: "User",
+       default: null
+     },
+     // Cached student count (for mentors — updated on assignment)
+     studentCount: {
+       type: Number,
+       default: 0
+     },
+     // streak tracking
+     streak: {
+       current: { type: Number, default: 0 },
+       longest: { type: Number, default: 0 },
+       lastStudiedAt: { type: Date, default: null }
+     },
      // mentor verification
      mentorVerification: {
              status: {
@@ -57,7 +74,7 @@ const userSchema=new mongoose.Schema(
             enum: ["pending", "approved", "rejected"],
             default: "pending"
              },
-             documents: [String], //file paths, /URL
+             documents: { type: [String], default: [] },
              reviewedBy: {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: "User"

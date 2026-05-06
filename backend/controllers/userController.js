@@ -4,6 +4,7 @@ const Progress = require("../models/Progress");
 const bcrypt = require("bcryptjs");
 const asyncHandler = require("../middleware/asyncHandler");
 const { logActivity } = require("../utils/activityLogger");
+const { assignMentor } = require("../utils/assignMentor");
 
 const getMyProfile= async (req,res) => {
         res.status(200).json({
@@ -143,9 +144,22 @@ const completeProfile = async (req, res) => {
 
     await user.save();
 
+    // Auto-assign a mentor if student doesn't already have one
+    let assignedMentorData = null;
+    if (user.role === "student" && !user.assignedMentor) {
+      try {
+        assignedMentorData = await assignMentor(user);
+      } catch (assignErr) {
+        console.error("Mentor assignment error:", assignErr.message);
+      }
+    }
+
     res.status(200).json({
       message: "Profile completed successfully",
       documents: user.mentorVerification.documents,
+      assignedMentor: assignedMentorData
+        ? { _id: assignedMentorData._id, name: assignedMentorData.name }
+        : null
     });
   } catch (error) {
     console.error("Onboarding error:", error);
@@ -382,29 +396,31 @@ const rejectMentor = asyncHandler(async (req, res) => {
   try {
     const mentor = await User.findById(req.params.id);
 
-    // 🔍 Check if user exists
     if (!mentor) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // 🔍 Prevent duplicate rejection
     if (mentor.mentorVerification?.status === "rejected") {
       return res.status(400).json({ message: "Already rejected" });
     }
 
-    // 🧠 Update verification status
     mentor.mentorVerification = {
       status: "rejected",
       reviewedBy: req.user._id,
       reviewedAt: new Date(),
     };
 
-    // Optional: reset role if needed
     if (mentor.role === "mentor") {
-      mentor.role = "student"; // or keep as is depending on your logic
+      mentor.role = "student";
     }
 
     await mentor.save();
+
+    // Reassign all students of this mentor to new mentors (non-blocking)
+    const { reassignMentorStudents } = require("../utils/assignMentor");
+    reassignMentorStudents(mentor._id.toString()).catch(err =>
+      console.error("Reassignment error after rejection:", err.message)
+    );
 
     res.status(200).json({
       message: "Mentor rejected successfully",

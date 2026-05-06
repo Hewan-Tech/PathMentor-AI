@@ -3,6 +3,7 @@ const Lesson = require("../models/Lesson");
 const Level = require("../models/Level");
 const Achievement = require("../models/Achievement");
 const Course = require("../models/Course");
+const User = require("../models/User");
 const asyncHandler = require("../middleware/asyncHandler");
 
 
@@ -351,15 +352,33 @@ const getUserXP = asyncHandler(async (req, res) => {
 
 });
 
-const getPlatformAnalytics = async (req, res) => {
+const getPlatformAnalytics = asyncHandler(async (req, res) => {
   const totalUsers = await User.countDocuments();
   const totalCourses = await Course.countDocuments();
+  res.json({ success: true, totalUsers, totalCourses });
+});
 
-  res.json({
-    totalUsers,
-    totalCourses
-  });
-};
+/*
+========================================
+GET USER ACHIEVEMENTS
+GET /api/progress/achievements
+========================================
+*/
+const getUserAchievements = asyncHandler(async (req, res) => {
+  const achievements = await Achievement.find({ user: req.user._id }).sort({ earnedAt: -1 });
+  res.json({ success: true, data: achievements });
+});
+
+/*
+========================================
+GET USER STREAK
+GET /api/progress/streak
+========================================
+*/
+const getUserStreak = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id).select("streak");
+  res.json({ success: true, streak: user?.streak || { current: 0, longest: 0 } });
+});
 
 /*
 ========================================
@@ -371,5 +390,7 @@ module.exports = {
   updateLevelScore,
   getCourseProgress,
   getUserXP,
-  getPlatformAnalytics
+  getPlatformAnalytics,
+  getUserAchievements,
+  getUserStreak
 };

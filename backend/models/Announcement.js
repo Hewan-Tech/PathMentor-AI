@@ -26,7 +26,30 @@ const announcementSchema = new mongoose.Schema({
     type: String,
     enum: ["admin", "mentor"],
     required: true
-  }
+  },
+
+  category: {
+    type: String,
+    enum: ["General", "Events", "Internship", "Hackathon", "News"],
+    default: "General"
+  },
+
+  imageUrl: {
+    type: String
+  },
+
+  link: {
+    type: String
+  },
+
+  expiresAt: {
+    type: Date
+  },
+
+  bookmarkedBy: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User"
+  }]
 
 }, { timestamps: true });
 

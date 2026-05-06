@@ -108,23 +108,25 @@ const Auth = () => {
 
     // ✅ Proper Role-Based Navigation
     if (user.role === "mentor") {
-      const status =
-        user.mentorVerification?.status?.toLowerCase().trim();
-
+      const status = user.mentorVerification?.status?.toLowerCase().trim();
+      // Only redirect to pending if explicitly "pending"
+      // null, undefined, "approved" all go to dashboard
       if (status === "pending") {
         navigate("/mentor/pending");
+      } else if (status === "rejected") {
+        navigate("/mentor/pending"); // show rejection status
       } else {
         navigate("/mentor/dashboard");
       }
     } else if (user.role === "admin") {
       navigate("/admin/dashboard");
     } else if (user.role === "student") {
-  if (!user.onboardingCompleted) {
-    navigate("/register");
-  } else {
-    navigate("/dashboard");
-  }
-}
+      if (!user.onboardingCompleted) {
+        navigate("/register");
+      } else {
+        navigate("/dashboard");
+      }
+    }
 
   } catch (error: any) {
     toast({
@@ -205,10 +207,10 @@ const Auth = () => {
       }
       className="w-full pl-10 pr-4 py-3 glass-inner-glow rounded-xl bg-black/20 border-none focus:outline-none focus:ring-2 focus:ring-primary/50 appearance-none text-sm"
     >
-      <option value="student" className="bg-slate-900">
+      <option value="student">
         Sign up as Student
       </option>
-      <option value="mentor" className="bg-slate-900">
+      <option value="mentor">
         Sign up as Mentor
       </option>
     </select>
@@ -276,7 +278,7 @@ const Auth = () => {
 
             {isLogin && (
               <div className="text-right">
-                <a href="#" className="text-sm text-primary hover:underline">
+                <a href="/reset-password" className="text-sm text-primary hover:underline">
                   Forgot password?
                 </a>
               </div>

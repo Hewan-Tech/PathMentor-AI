@@ -21,7 +21,7 @@ const GlassCard = forwardRef<HTMLDivElement, GlassCardProps>(
         ref={ref}
         className={cn(
           variants[variant],
-          hover && "transition-all duration-300 hover:border-white/20",
+          hover && "transition-all duration-300 hover:border-foreground/20",
           className
         )}
         whileHover={hover ? { y: -5, scale: 1.01 } : undefined}

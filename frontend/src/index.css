@@ -4,6 +4,44 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Global select / combobox fix ──────────────────────────
+   Native <select> dropdowns ignore most Tailwind classes on
+   <option> elements. This forces a consistent dark background
+   and readable text in ALL browsers and both themes.
+   ─────────────────────────────────────────────────────── */
+select {
+  color-scheme: dark;
+}
+
+select option {
+  background-color: #0f172a;
+  color: #f1f5f9;
+}
+
+select option:hover,
+select option:focus,
+select option:checked {
+  background-color: #1e3a5f;
+  color: #ffffff;
+}
+
+/* Light mode overrides */
+.light select {
+  color-scheme: light;
+}
+
+.light select option {
+  background-color: #ffffff;
+  color: #1e293b;
+}
+
+.light select option:hover,
+.light select option:focus,
+.light select option:checked {
+  background-color: #e0f2fe;
+  color: #0f172a;
+}
+
 @layer base {
   :root {
     /* Base colors - Premium dark theme */
@@ -67,6 +105,59 @@
     --sidebar-border: 230 20% 18%;
     --sidebar-ring: 200 100% 60%;
   }
+
+  /* ── Light mode ── */
+  .light {
+    --background: 210 20% 97%;
+    --foreground: 230 25% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 230 25% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 230 25% 10%;
+
+    --primary: 200 100% 38%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 270 60% 55%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 210 20% 92%;
+    --muted-foreground: 210 15% 42%;
+
+    --accent: 175 70% 38%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 210 20% 84%;
+    --input: 210 20% 90%;
+    --ring: 200 100% 38%;
+
+    --glass-bg: 0 0% 100% / 0.65;
+    --glass-elevated-bg: 0 0% 100% / 0.85;
+    --glass-border: 210 20% 70% / 0.5;
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.07);
+
+    --glow-primary: hsl(200 100% 38% / 0.2);
+    --glow-secondary: hsl(270 60% 55% / 0.15);
+    --glow-accent: hsl(175 70% 38% / 0.15);
+
+    --gradient-mesh: radial-gradient(at 20% 10%, hsl(200 100% 60% / 0.05) 0px, transparent 50%),
+                     radial-gradient(at 80% 20%, hsl(270 80% 65% / 0.03) 0px, transparent 50%),
+                     radial-gradient(at 10% 80%, hsl(175 80% 50% / 0.03) 0px, transparent 50%);
+
+    --sidebar-background: 210 20% 95%;
+    --sidebar-foreground: 230 25% 10%;
+    --sidebar-primary: 200 100% 38%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 20% 88%;
+    --sidebar-accent-foreground: 230 25% 10%;
+    --sidebar-border: 210 20% 84%;
+    --sidebar-ring: 200 100% 38%;
+  }
 }
 
 @layer base {
@@ -83,6 +174,11 @@
     background-image: var(--gradient-mesh);
     background-attachment: fixed;
     min-height: 100vh;
+  }
+
+  /* Light mode body */
+  .light body {
+    background-image: var(--gradient-mesh);
   }
 }
 
@@ -146,6 +242,55 @@
     -webkit-backdrop-filter: blur(40px);
     border-top: 1px solid rgba(255, 255, 255, 0.15);
   }
+
+  /* Light mode glass overrides */
+  .light .glass-premium {
+    background: rgba(255, 255, 255, 0.75);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.07);
+  }
+
+  .light .glass-panel {
+    background: rgba(255, 255, 255, 0.65);
+    border-color: rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  }
+
+  .light .glass-elevated {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: rgba(0, 0, 0, 0.1);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+  }
+
+  .light .glass-inner-glow {
+    background: rgba(0, 0, 0, 0.04);
+    border-color: rgba(0, 0, 0, 0.08);
+    box-shadow: none;
+  }
+
+  .light .glass-bottom-nav {
+    background: rgba(245, 247, 250, 0.92);
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+  }
+
+  /* Light mode: fix hardcoded white/black utility patterns */
+  .light .text-white { color: hsl(230 25% 10%) !important; }
+  .light .text-white\/70 { color: hsl(230 25% 10% / 0.7) !important; }
+  .light .text-white\/40 { color: hsl(230 25% 10% / 0.4) !important; }
+  .light .border-white\/10 { border-color: rgba(0,0,0,0.08) !important; }
+  .light .border-white\/20 { border-color: rgba(0,0,0,0.12) !important; }
+  .light .border-white\/5  { border-color: rgba(0,0,0,0.05) !important; }
+  .light .bg-white\/5  { background-color: rgba(0,0,0,0.04) !important; }
+  .light .bg-white\/10 { background-color: rgba(0,0,0,0.06) !important; }
+  .light .bg-white\/20 { background-color: rgba(0,0,0,0.08) !important; }
+  .light .bg-black\/20 { background-color: rgba(0,0,0,0.06) !important; }
+  .light .bg-black\/60 { background-color: rgba(0,0,0,0.4) !important; }
+  .light .hover\:bg-white\/5:hover  { background-color: rgba(0,0,0,0.04) !important; }
+  .light .hover\:bg-white\/10:hover { background-color: rgba(0,0,0,0.06) !important; }
+  .light .hover\:bg-white\/20:hover { background-color: rgba(0,0,0,0.08) !important; }
+  .light .hover\:border-white\/20:hover { border-color: rgba(0,0,0,0.12) !important; }
+  .light .divide-white\/5 > * + * { border-color: rgba(0,0,0,0.06) !important; }
+  .light .divide-white\/10 > * + * { border-color: rgba(0,0,0,0.08) !important; }
 
   /* Text gradient */
   .text-gradient {
@@ -422,4 +567,43 @@
   .parallax-medium {
     transform: translateZ(-1px) scale(2);
   }
+}
+
+/* ── Hide scrollbars globally while keeping scroll functionality ── */
+@layer utilities {
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Reusable select input style — use this class on all <select> elements */
+  .select-input {
+    @apply w-full p-3 rounded-xl border text-sm focus:outline-none transition-colors;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: hsl(var(--foreground));
+    color-scheme: dark;
+  }
+
+  .select-input:focus {
+    border-color: hsl(var(--primary) / 0.7);
+  }
+
+  .light .select-input {
+    background-color: rgba(0, 0, 0, 0.04);
+    border-color: rgba(0, 0, 0, 0.12);
+    color-scheme: light;
+  }
+}
+
+/* Hide scrollbar on the sidebar specifically */
+aside::-webkit-scrollbar {
+  display: none;
+}
+aside {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

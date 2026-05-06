@@ -76,9 +76,9 @@ export const DashboardTopNav = ({
         <div className="flex items-center gap-3">
           <button
             onClick={onMenuToggle}
-            className="lg:hidden p-2 rounded-xl hover:bg-white/10 transition-colors"
+            className="lg:hidden p-2 rounded-xl hover:bg-foreground/10 transition-colors"
           >
-            <Menu className="w-5 h-5 text-white" />
+            <Menu className="w-5 h-5 text-foreground" />
           </button>
           
           <Link to="/" className="flex items-center gap-3">
@@ -88,24 +88,24 @@ export const DashboardTopNav = ({
             >
               <span className="text-lg font-bold text-primary-foreground">P</span>
             </motion.div>
-            <span className="text-lg font-semibold hidden sm:block text-white">PathMentor AI</span>
+            <span className="text-lg font-semibold hidden sm:block text-foreground">PathMentor AI</span>
           </Link>
         </div>
 
         {/* Right: AI Status, Notifications, User */}
         <div className="flex items-center gap-2 md:gap-4">
           <motion.div
-            className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10"
+            className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-foreground/5 border border-foreground/10"
           >
             <div className={`w-2 h-2 rounded-full ${aiActive ? "bg-teal ai-status-glow" : "bg-muted-foreground"}`} />
             <span className="text-xs text-muted-foreground">AI Active</span>
           </motion.div>
 
           <motion.button
-            className="relative p-2.5 rounded-xl hover:bg-white/10 transition-colors"
+            className="relative p-2.5 rounded-xl hover:bg-foreground/10 transition-colors"
             whileHover={{ scale: 1.05 }}
           >
-            <Bell className="w-5 h-5 text-white" />
+            <Bell className="w-5 h-5 text-foreground" />
             {hasNotifications && (
               <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-accent notification-glow" />
             )}
@@ -116,28 +116,28 @@ export const DashboardTopNav = ({
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <motion.button
-                  className="flex items-center gap-2 p-1.5 pr-3 rounded-xl hover:bg-white/10 transition-colors"
+                  className="flex items-center gap-2 p-1.5 pr-3 rounded-xl hover:bg-foreground/10 transition-colors"
                   whileHover={{ scale: 1.02 }}
                 >
-                  <div className="w-8 h-8 rounded-xl bg-gradient-secondary overflow-hidden flex items-center justify-center border border-white/10">
+                  <div className="w-8 h-8 rounded-xl bg-gradient-secondary overflow-hidden flex items-center justify-center border border-foreground/10">
                     {profileImage ? (
                       <img src={profileImage} alt="Avatar" className="w-full h-full object-cover" />
                     ) : (
                       <User className="w-4 h-4 text-secondary-foreground" />
                     )}
                   </div>
-                  <span className="hidden md:block text-sm font-medium text-white max-w-[120px] truncate">
+                  <span className="hidden md:block text-sm font-medium text-foreground max-w-[120px] truncate">
                     {userName}
                   </span>
                 </motion.button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 glass-premium border-white/20 text-white">
+              <DropdownMenuContent align="end" className="w-56 glass-premium border-foreground/20 text-foreground">
                 <div className="px-3 py-2">
                   <p className="text-sm font-medium">{userName}</p>
                   <p className="text-xs text-muted-foreground truncate">{userEmail}</p>
                 </div>
                 
-                <DropdownMenuSeparator className="bg-white/10" />
+                <DropdownMenuSeparator className="bg-foreground/10" />
                 
                 {/* Modal Trigger */}
                 <DialogTrigger asChild>
@@ -146,7 +146,7 @@ export const DashboardTopNav = ({
                   </DropdownMenuItem>
                 </DialogTrigger>
                
-                <DropdownMenuSeparator className="bg-white/10" />
+                <DropdownMenuSeparator className="bg-foreground/10" />
                 <DropdownMenuItem onClick={onSignOut} className="text-destructive focus:text-destructive cursor-pointer flex items-center gap-2">
                   <LogOut className="w-4 h-4" /> Sign Out
                 </DropdownMenuItem>
@@ -154,9 +154,9 @@ export const DashboardTopNav = ({
             </DropdownMenu>
 
             {/* Edit Profile Pop-up */}
-            <DialogContent className="glass-premium border-white/20 text-white sm:max-w-[425px]">
+            <DialogContent className="glass-premium border-foreground/20 text-foreground sm:max-w-[425px]">
               <DialogHeader>
-                <DialogTitle className="flex items-center gap-2 text-white">
+                <DialogTitle className="flex items-center gap-2 text-foreground">
                   <Settings className="w-5 h-5 text-teal" /> Edit Profile
                 </DialogTitle>
               </DialogHeader>
@@ -165,21 +165,19 @@ export const DashboardTopNav = ({
                 {/* Photo Upload Section */}
                 <div className="flex flex-col items-center gap-4">
                   <div className="relative group">
-                    <div className="w-24 h-24 rounded-3xl bg-gradient-secondary overflow-hidden border-2 border-white/20 flex items-center justify-center shadow-2xl">
+                    <div className="w-24 h-24 rounded-3xl bg-gradient-secondary overflow-hidden border-2 border-foreground/20 flex items-center justify-center shadow-2xl">
                       {profileImage ? (
                         <img src={profileImage} alt="Preview" className="w-full h-full object-cover" />
                       ) : (
                         <User className="w-10 h-10 text-secondary-foreground" />
                       )}
                     </div>
-                    {/* Hover Overlay */}
                     <button 
                       onClick={() => fileInputRef.current?.click()}
                       className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-3xl cursor-pointer"
                     >
                       <Camera className="w-6 h-6 text-white" />
                     </button>
-                    {/* Clear Selection */}
                     {profileImage && (
                       <button 
                         onClick={() => setProfileImage(null)}
@@ -196,11 +194,11 @@ export const DashboardTopNav = ({
                 <div className="grid gap-4">
                   <div className="grid gap-2">
                     <Label htmlFor="name" className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Full Name</Label>
-                    <Input id="name" value={editName} onChange={(e) => setEditName(e.target.value)} className="bg-white/5 border-white/10 focus:border-teal text-white" />
+                    <Input id="name" value={editName} onChange={(e) => setEditName(e.target.value)} className="bg-foreground/5 border-foreground/10 focus:border-teal text-foreground" />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="email" className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Email</Label>
-                    <Input id="email" value={userEmail} disabled className="bg-white/5 border-white/10 opacity-50 cursor-not-allowed" />
+                    <Input id="email" value={userEmail} disabled className="bg-foreground/5 border-foreground/10 opacity-50 cursor-not-allowed" />
                   </div>
                 </div>
               </div>

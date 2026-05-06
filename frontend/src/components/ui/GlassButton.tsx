@@ -15,9 +15,9 @@ const GlassButton = forwardRef<HTMLButtonElement, GlassButtonProps>(
     
     const variants = {
       primary: "bg-gradient-to-r from-primary to-secondary text-primary-foreground hover:shadow-glow",
-      secondary: "glass-inner-glow text-foreground hover:bg-white/15",
-      ghost: "bg-transparent text-foreground hover:bg-white/10",
-      outline: "bg-transparent border border-white/20 text-foreground hover:bg-white/10 hover:border-white/30",
+      secondary: "glass-inner-glow text-foreground hover:bg-foreground/10",
+      ghost: "bg-transparent text-foreground hover:bg-foreground/10",
+      outline: "bg-transparent border border-foreground/20 text-foreground hover:bg-foreground/10 hover:border-foreground/30",
     };
 
     const sizes = {

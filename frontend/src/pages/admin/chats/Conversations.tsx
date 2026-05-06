@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Search, MessageCircle, MoreVertical, Send, ShieldAlert, CheckCheck } from 'lucide-react';
+import AdminChat from '../chat/AdminChat';
 
 const Conversations = () => {
   const [selectedChat, setSelectedChat] = useState(0);
@@ -74,41 +75,7 @@ const Conversations = () => {
           </div>
         </div>
 
-        {/* Message View */}
-        <div className="flex-1 p-6 overflow-y-auto space-y-4 [scrollbar-width:none]">
-          <div className="flex justify-center"><span className="text-[10px] bg-white/5 px-3 py-1 rounded-full text-slate-500 uppercase font-bold tracking-widest">Today</span></div>
-          
-          <div className="flex flex-col items-start max-w-[70%]">
-            <div className="bg-white/5 border border-white/10 p-3 rounded-2xl rounded-tl-none text-sm text-slate-300">
-              {chatList[selectedChat].lastMsg}
-            </div>
-            <span className="text-[10px] text-slate-500 mt-1 ml-1">10:42 AM</span>
-          </div>
-
-          <div className="flex flex-col items-end self-end max-w-[70%] ml-auto">
-            <div className="bg-blue-600 p-3 rounded-2xl rounded-tr-none text-sm text-white shadow-lg shadow-blue-900/20">
-              Hello! I am looking into your request right now. Give me a moment.
-            </div>
-            <div className="flex items-center gap-1 mt-1 mr-1">
-               <span className="text-[10px] text-slate-500">10:45 AM</span>
-               <CheckCheck size={12} className="text-blue-400" />
-            </div>
-          </div>
-        </div>
-
-        {/* Input Area */}
-        <div className="p-4 border-t border-white/5">
-          <form className="flex gap-3" onSubmit={(e) => e.preventDefault()}>
-            <input 
-              type="text" 
-              placeholder="Type your message..." 
-              className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500/50"
-            />
-            <button className="bg-blue-600 text-white p-2.5 rounded-xl hover:bg-blue-500 transition-all">
-              <Send size={18} />
-            </button>
-          </form>
-        </div>
+        <AdminChat roomId={`chat-${chatList[selectedChat].id}`} />
       </div>
     </div>
   );

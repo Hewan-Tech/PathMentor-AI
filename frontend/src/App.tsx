@@ -12,6 +12,14 @@ import Roadmap from "./pages/Roadmap";
 import Dashboard from "./pages/Dashboard";
 import ProfilePage from "./pages/ProfilePage";
 import NotFound from "./pages/NotFound";
+import Lessons from "./pages/Lessons";
+import Leaderboard from "./pages/Leaderboard";
+import Achievements from "./pages/Achievements";
+import Announcements from "./pages/Announcements";
+import StudyBuddies from "./pages/StudyBuddies";
+import Sessions from "./pages/Sessions";
+import ResetPassword from "./pages/ResetPassword";
+import Settings from "./pages/Settings";
 
 // Mentor Pages
 import MentorDashboard from "./pages/mentor/MentorDashboard";
@@ -22,6 +30,8 @@ import MentorCourseAnalysis from "./pages/mentor/CourseAnalysis";
 import ClassUpload from "./pages/mentor/ClassUpload";
 import MentorTaskBuilder from "./pages/mentor/MentorTaskBuilder";
 import MentorReviewQueue from "./pages/mentor/MentorReviewQueue";
+import MentorSessions from "./pages/mentor/MentorSessions";
+import MentorAnnouncements from "./pages/mentor/MentorAnnouncements";
 
 // Admin Pages
 import AdminLayout from "./pages/admin/AdminLayout";
@@ -71,6 +81,10 @@ import SystemSettings from "./pages/admin/settings/SystemSettings";
 import ProfileSettings from "./pages/admin/settings/ProfileSettings";
 import DeveloperTools from "./pages/admin/settings/DeveloperTools";
 
+// Announcements & Leaderboard
+import AdminAnnouncements from "./pages/admin/announcements/AdminAnnouncements";
+import AdminLeaderboard from "./pages/admin/leaderboard/AdminLeaderboard";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -85,18 +99,27 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
 
           {/* STUDENT */}
           <Route path="/roadmap" element={<Roadmap />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/lessons" element={<Lessons />} />
+          <Route path="/leaderboard" element={<Leaderboard />} />
+          <Route path="/achievements" element={<Achievements />} />
+          <Route path="/announcements" element={<Announcements />} />
+          <Route path="/study-buddies" element={<StudyBuddies />} />
+          <Route path="/sessions" element={<Sessions />} />
 
           {/* MENTOR */}
           <Route path="/mentor/pending" element={<MentorPendingApproval />} />
           <Route path="/mentor/dashboard" element={<MentorDashboard />} />
           <Route path="/mentor/task/:id" element={<MentorTaskBuilder />} />
           <Route path="/mentor/review" element={<MentorReviewQueue />} />
-          
+          <Route path="/mentor/sessions" element={<MentorSessions />} />
+          <Route path="/mentor/announcements" element={<MentorAnnouncements />} />
 
           {/* MENTOR CLASSES */}
           <Route path="/mentor/classes" element={<MentorClasses />} />
@@ -156,6 +179,10 @@ const App = () => (
             <Route path="settings/roles" element={<RolesPermissions />} />
             <Route path="settings/system" element={<SystemSettings />} />
             <Route path="settings/dev" element={<DeveloperTools />} />
+
+            {/* Announcements & Leaderboard */}
+            <Route path="announcements" element={<AdminAnnouncements />} />
+            <Route path="leaderboard" element={<AdminLeaderboard />} />
           </Route>
 
           {/* 404 */}
