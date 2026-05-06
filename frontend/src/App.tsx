@@ -27,6 +27,7 @@ import StudentProgress from "./pages/mentor/StudentProgress";
 
 
 
+
 // Admin Pages
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -73,6 +74,7 @@ import RolesPermissions from "./pages/admin/settings/RolesPermissions";
 import SystemSettings from "./pages/admin/settings/SystemSettings";
 import ProfileSettings from "./pages/admin/settings/ProfileSettings";
 import DeveloperTools from "./pages/admin/settings/DeveloperTools";
+import Messages from "./pages/mentor/Messages";
 
 const queryClient = new QueryClient();
 
@@ -105,6 +107,7 @@ const App = () => (
           <Route path="/mentor/course-students"element={<CourseStudents />}/>
           <Route path="/mentor/course-analysis/:id"element={<CourseAnalysis />}/>
           <Route path="/mentor/student-progress/:id"element={<StudentProgress />}/>
+          <Route path="/mentor/messages" element={<Messages />} />
 
           {/* MY CLASSES FLOW */}
           

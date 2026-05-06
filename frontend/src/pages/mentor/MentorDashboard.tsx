@@ -190,11 +190,17 @@ const MentorDashboard = () => {
 
           {/* STATS */}
           <div className="grid md:grid-cols-3 gap-6">
-            <div className="p-6 rounded-2xl bg-white/[0.04] border border-white/10">
-              <MessageSquare className="mb-3 text-[#33b6ff]" />
-              <h3 className="text-xl font-bold">24</h3>
-              <p className="text-white/60">New Messages</p>
-            </div>
+            <div
+  onClick={() => navigate("/mentor/messages?filter=unread")}
+  className="p-6 rounded-2xl bg-white/[0.04] border border-white/10 
+             cursor-pointer transition hover:scale-[1.03] 
+             hover:bg-[#33b6ff]/10 active:scale-[0.98]"
+>
+  <MessageSquare className="mb-3 text-[#33b6ff]" />
+
+  <h3 className="text-xl font-bold">24</h3>
+  <p className="text-white/60">New Messages</p>
+</div>
 
             <div className="p-6 rounded-2xl bg-white/[0.04] border border-white/10">
               <Star className="mb-3 text-[#33b6ff]" />
@@ -275,4 +281,4 @@ const MentorDashboard = () => {
   );
 };
 
-export default MentorDashboard;
+export default MentorDashboard; 
