@@ -141,7 +141,7 @@ const CourseStudents = () => {
                   {student.progress}% complete
                 </p>
               </div>
-            </div>
+            </div>            
 
             {/* RIGHT SIDE */}
             <div className="flex gap-3">
