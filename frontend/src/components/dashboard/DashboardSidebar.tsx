@@ -48,7 +48,7 @@ export const DashboardSidebar = ({
   const navigate = useNavigate();
 
   const normalNavItems: NavItem[] = [
-    { icon: LayoutDashboard, label: "Dashboard", id: "dashboard" },
+    { icon: LayoutDashboard, label: "Dashboard", id: "dashboard", path: "/dashboard" },
     { icon: BookOpen, label: "My courses", id: "courses", path: "/mentor/courses" },
     { icon: Users, label: "Students", id: "students", path: "/mentor/students" },
     { icon: Award, label: "Grades", id: "grades", path: "/mentor/grades" },
@@ -109,7 +109,7 @@ export const DashboardSidebar = ({
             </div>
           )}
 
-          <nav className="flex-1 space-y-2">
+          <nav className="flex-1 space-y-2 overflow-y-auto scrollbar-hide">
             {navItems.map((item) => {
               const isActive = activeView === item.id;
               return (

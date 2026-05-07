@@ -17,7 +17,7 @@ import {
   Bell,
 } from "lucide-react";
 const menuItems = [
-  { name: "Dashboard", path: "/mentor/dashboard", icon: LayoutDashboard },
+  { name: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
   { name: "My courses", path: "/mentor/my-classes", icon: BookOpen },
   { name: "Students", path: "/mentor/students", icon: Users },
   { name: "Grades", path: "/mentor/grades", icon: Award },
@@ -110,7 +110,7 @@ const DashboardSidebar = ({
         </div>
 
         {/* MENU */}
-        <div className="flex-1 p-3 space-y-2 overflow-y-auto">
+        <div className="flex-1 p-3 space-y-2 overflow-y-auto scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
           {menuItems.map((item) => {
             const Icon = item.icon;
 

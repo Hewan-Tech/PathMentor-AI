@@ -187,10 +187,14 @@
     opacity: 0.6;
   }
 
-  /* Liquid ripple effect */
-  .liquid-ripple {
-    position: relative;
-    overflow: hidden;
+  /* Hide scrollbar */
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    width: 0;  /* Remove scrollbar space */
+    background: transparent;  /* Optional: just make scrollbar invisible */
   }
 
   .liquid-ripple::after {
