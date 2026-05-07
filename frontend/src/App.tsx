@@ -23,7 +23,9 @@ import StudentProfile from "./pages/mentor/StudentProfile";
 import CourseStudents from "./pages/mentor/CourseStudents";
 import CourseAnalysis from "./pages/mentor/CourseAnalysis";
 import StudentProgress from "./pages/mentor/StudentProgress";
-
+import CourseProgress from "./pages/mentor/CourseProgress";
+import MentorSettings from "./pages/mentor/Settings";
+import Community from "./pages/mentor/Community";
 
 
 
@@ -103,10 +105,13 @@ const App = () => (
           <Route path="/mentor/courses" element={<MyClasses />} />
           <Route path="/mentor/projects" element={<ProjectsAndQuizzes />} />
           <Route path="/mentor/upload" element={<UploadMaterial />} />
-          <Route path="/mentor/student/:id"element={<StudentProfile />}/>
-          <Route path="/mentor/course-students"element={<CourseStudents />}/>
-          <Route path="/mentor/course-analysis/:id"element={<CourseAnalysis />}/>
-          <Route path="/mentor/student-progress/:id"element={<StudentProgress />}/>
+          <Route path="/mentor/student/:id" element={<StudentProfile />} />
+          <Route path="/mentor/course-students" element={<CourseStudents />} />
+          <Route path="/mentor/course-analysis/:id" element={<CourseAnalysis />} />
+          <Route path="/mentor/student-progress/:id" element={<StudentProgress />} />
+          <Route path="/mentor/progress" element={<CourseProgress />} />
+          <Route path="/mentor/settings" element={<MentorSettings />} />
+          <Route path="/mentor/community" element={<Community />} />
           <Route path="/mentor/messages" element={<Messages />} />
 
           {/* MY CLASSES FLOW */}

@@ -1,4 +1,6 @@
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import type { LucideIcon } from "lucide-react";
 import {
   LayoutDashboard,
   BookOpen,
@@ -11,6 +13,13 @@ import {
   BarChart,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+type NavItem = {
+  icon: LucideIcon;
+  label: string;
+  id: string;
+  path?: string;
+};
 
 interface DashboardSidebarProps {
   isOpen: boolean;
@@ -31,16 +40,18 @@ export const DashboardSidebar = ({
   onViewChange = () => {},
   pendingMode = false,
 }: DashboardSidebarProps) => {
-  const normalNavItems = [
+  const navigate = useNavigate();
+
+  const normalNavItems: NavItem[] = [
     { icon: LayoutDashboard, label: "Dashboard", id: "dashboard" },
-    { icon: BookOpen, label: "My courses", id: "courses" },
-    { icon: BarChart, label: "Progress", id: "progress" },
-    { icon: FolderKanban, label: "Projects", id: "projects" },
-    { icon: Users, label: "Community", id: "community" },
-    { icon: Settings, label: "Settings", id: "settings" },
+    { icon: BookOpen, label: "My courses", id: "courses", path: "/mentor/courses" },
+    { icon: BarChart, label: "Progress", id: "progress", path: "/mentor/progress" },
+    { icon: FolderKanban, label: "Projects", id: "projects", path: "/mentor/projects" },
+    { icon: Users, label: "Community", id: "community", path: "/mentor/community" },
+    { icon: Settings, label: "Settings", id: "settings", path: "/mentor/settings" },
   ];
 
-  const pendingNavItems = [
+  const pendingNavItems: NavItem[] = [
     { icon: ShieldCheck, label: "Application", id: "application" },
     { icon: Clock3, label: "Status", id: "status" },
     { icon: Settings, label: "Settings", id: "settings" },
@@ -94,7 +105,11 @@ export const DashboardSidebar = ({
                 <button
                   key={item.id}
                   onClick={() => {
-                    onViewChange(item.id);
+                    if (item.path) {
+                      navigate(item.path);
+                    } else {
+                      onViewChange(item.id);
+                    }
                     if (window.innerWidth < 1024) onClose();
                   }}
                   className={cn(

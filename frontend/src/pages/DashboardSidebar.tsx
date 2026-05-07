@@ -1,20 +1,25 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
+  
   LayoutDashboard,
   BookOpen,
   ClipboardList,
   MessageSquare,
   BarChart3,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
-
+import { Settings } from "lucide-react";
 const menuItems = [
   { name: "Dashboard", path: "/mentor/dashboard", icon: LayoutDashboard },
-  { name: "Courses", path: "/mentor/courses", icon: BookOpen },
+  { name: "My courses", path: "/mentor/my-classes", icon: BookOpen },
   { name: "Projects", path: "/mentor/projects", icon: ClipboardList },
   { name: "Messages", path: "/mentor/messages", icon: MessageSquare },
   { name: "Analytics", path: "/mentor/course-analysis/1", icon: BarChart3 },
+  { name: "Settings", path: "/mentor/settings", icon: Settings },
 ];
+
 
 const DashboardSidebar = ({
   isOpen,
@@ -27,7 +32,11 @@ const DashboardSidebar = ({
 
   const go = (path: string) => {
     navigate(path);
-    onClose(); // mobile close
+
+    // close sidebar only on mobile
+    if (window.innerWidth < 1024) {
+      onClose();
+    }
   };
 
   return (
@@ -36,7 +45,7 @@ const DashboardSidebar = ({
       {isOpen && (
         <div
           onClick={onClose}
-          className="fixed inset-0 bg-black/60 z-40 lg:hidden"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
         />
       )}
 
@@ -44,61 +53,111 @@ const DashboardSidebar = ({
       <motion.aside
         initial={false}
         animate={{
-          width: isCollapsed ? 80 : 260,
+          width: isCollapsed ? 88 : 270,
         }}
-        className={`
-          fixed top-0 left-0 h-full z-50
-          bg-[#0b1220] border-r border-white/10
-          flex flex-col
-          transition-all duration-300
+   className={`
+  fixed top-0 left-0 h-screen z-50
+  bg-[#081120]/95 backdrop-blur-xl
+  border-r border-white/10
+  flex flex-col
+  shadow-2xl
+  transition-transform duration-300
 
-          /* RESPONSIVE BEHAVIOR */
-          ${isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
-        `}
+  ${isOpen ? "translate-x-0" : "-translate-x-full"}
+  lg:translate-x-0
+`}
       >
         {/* HEADER */}
-        <div className="p-4 flex items-center justify-between border-b border-white/10">
+        <div className="h-20 px-4 flex items-center justify-between border-b border-white/10">
           {!isCollapsed && (
-            <h1 className="text-white font-bold">
-              Mentor <span className="text-[#33b6ff]">Panel</span>
-            </h1>
+            <div>
+              <h1 className="text-xl font-bold text-white">
+                Mentor
+                <span className="text-[#33b6ff]"> Panel</span>
+              </h1>
+
+              <p className="text-xs text-white/40 mt-1">
+                Teaching Dashboard
+              </p>
+            </div>
           )}
 
           <button
             onClick={onToggleCollapse}
-            className="text-white/60 hover:text-white"
+            className="
+              w-10 h-10 rounded-xl
+              bg-white/5 hover:bg-[#33b6ff]/20
+              flex items-center justify-center
+              text-white transition
+            "
           >
-            ☰
+            {isCollapsed ? (
+              <ChevronRight size={18} />
+            ) : (
+              <ChevronLeft size={18} />
+            )}
           </button>
         </div>
 
         {/* MENU */}
-        <div className="flex-1 p-3 space-y-2">
+        <div className="flex-1 p-3 space-y-2 overflow-y-auto">
           {menuItems.map((item) => {
             const Icon = item.icon;
-            const active = location.pathname === item.path;
+
+            const active =
+              location.pathname === item.path;
 
             return (
               <button
                 key={item.name}
                 onClick={() => go(item.path)}
                 className={`
-                  w-full flex items-center gap-3 p-3 rounded-lg
-                  transition cursor-pointer
+                  group w-full flex items-center gap-4
+                  px-4 py-3 rounded-2xl
+                  transition-all duration-300
 
                   ${
                     active
-                      ? "bg-[#33b6ff]/20 text-[#33b6ff]"
-                      : "text-white/70 hover:bg-white/10"
+                      ? "bg-[#33b6ff] text-black shadow-lg shadow-[#33b6ff]/30"
+                      : "text-white/70 hover:bg-white/10 hover:text-white"
                   }
                 `}
               >
-                <Icon size={18} />
-                {!isCollapsed && <span>{item.name}</span>}
+                <Icon
+                  size={20}
+                  className={`
+                    ${
+                      active
+                        ? "text-black"
+                        : "text-[#33b6ff]"
+                    }
+                  `}
+                />
+
+                {!isCollapsed && (
+                  <span className="font-medium text-sm">
+                    {item.name}
+                  </span>
+                )}
               </button>
             );
           })}
         </div>
+
+        {/* FOOTER */}
+        {!isCollapsed && (
+          <div className="p-4 border-t border-white/10">
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-[#33b6ff]/20 to-cyan-500/10 border border-[#33b6ff]/20">
+              <h3 className="font-semibold text-sm text-white">
+                PathMentor AI
+              </h3>
+
+              <p className="text-xs text-white/50 mt-1">
+                Smart teaching platform for mentors
+              </p>
+            </div>
+          </div>
+        )}
       </motion.aside>
     </>
   );
