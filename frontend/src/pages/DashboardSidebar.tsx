@@ -9,13 +9,23 @@ import {
   BarChart3,
   ChevronLeft,
   ChevronRight,
+  Settings,
+  Users,
+  Award,
+  ClipboardCheck,
+  Calendar,
+  Bell,
 } from "lucide-react";
-import { Settings } from "lucide-react";
 const menuItems = [
   { name: "Dashboard", path: "/mentor/dashboard", icon: LayoutDashboard },
   { name: "My courses", path: "/mentor/my-classes", icon: BookOpen },
+  { name: "Students", path: "/mentor/students", icon: Users },
+  { name: "Grades", path: "/mentor/grades", icon: Award },
+  { name: "Assignments", path: "/mentor/assignments", icon: ClipboardCheck },
   { name: "Projects", path: "/mentor/projects", icon: ClipboardList },
+  { name: "Schedule", path: "/mentor/schedule", icon: Calendar },
   { name: "Messages", path: "/mentor/messages", icon: MessageSquare },
+  { name: "Notifications", path: "/mentor/notifications", icon: Bell },
   { name: "Analytics", path: "/mentor/course-analysis/1", icon: BarChart3 },
   { name: "Settings", path: "/mentor/settings", icon: Settings },
 ];
@@ -108,9 +118,12 @@ const DashboardSidebar = ({
               location.pathname === item.path;
 
             return (
-              <button
+              <motion.button
                 key={item.name}
                 onClick={() => go(item.path)}
+                whileHover={{ scale: 1.02 }}
+                transition={{ duration: 0.2 }}
+                title={isCollapsed ? item.name : ""}
                 className={`
                   group w-full flex items-center gap-4
                   px-4 py-3 rounded-2xl
@@ -139,7 +152,7 @@ const DashboardSidebar = ({
                     {item.name}
                   </span>
                 )}
-              </button>
+              </motion.button>
             );
           })}
         </div>

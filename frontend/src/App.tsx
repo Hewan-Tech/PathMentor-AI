@@ -26,6 +26,11 @@ import StudentProgress from "./pages/mentor/StudentProgress";
 import CourseProgress from "./pages/mentor/CourseProgress";
 import MentorSettings from "./pages/mentor/Settings";
 import Community from "./pages/mentor/Community";
+import Students from "./pages/mentor/Students";
+import Grades from "./pages/mentor/Grades";
+import Assignments from "./pages/mentor/Assignments";
+import Schedule from "./pages/mentor/Schedule";
+import Notifications from "./pages/mentor/Notifications";
 
 
 
@@ -103,6 +108,11 @@ const App = () => (
           <Route path="/mentor/pending" element={<MentorPendingApproval />} />
           <Route path="/mentor/dashboard" element={<MentorDashboard />} />
           <Route path="/mentor/courses" element={<MyClasses />} />
+          <Route path="/mentor/students" element={<Students />} />
+          <Route path="/mentor/grades" element={<Grades />} />
+          <Route path="/mentor/assignments" element={<Assignments />} />
+          <Route path="/mentor/schedule" element={<Schedule />} />
+          <Route path="/mentor/notifications" element={<Notifications />} />
           <Route path="/mentor/projects" element={<ProjectsAndQuizzes />} />
           <Route path="/mentor/upload" element={<UploadMaterial />} />
           <Route path="/mentor/student/:id" element={<StudentProfile />} />

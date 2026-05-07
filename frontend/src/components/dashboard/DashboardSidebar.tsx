@@ -11,6 +11,11 @@ import {
   Clock3,
   ShieldCheck,
   BarChart,
+  Award,
+  ClipboardCheck,
+  Calendar,
+  Bell,
+  MessageSquare,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -45,8 +50,14 @@ export const DashboardSidebar = ({
   const normalNavItems: NavItem[] = [
     { icon: LayoutDashboard, label: "Dashboard", id: "dashboard" },
     { icon: BookOpen, label: "My courses", id: "courses", path: "/mentor/courses" },
+    { icon: Users, label: "Students", id: "students", path: "/mentor/students" },
+    { icon: Award, label: "Grades", id: "grades", path: "/mentor/grades" },
+    { icon: ClipboardCheck, label: "Assignments", id: "assignments", path: "/mentor/assignments" },
     { icon: BarChart, label: "Progress", id: "progress", path: "/mentor/progress" },
     { icon: FolderKanban, label: "Projects", id: "projects", path: "/mentor/projects" },
+    { icon: Calendar, label: "Schedule", id: "schedule", path: "/mentor/schedule" },
+    { icon: MessageSquare, label: "Messages", id: "messages", path: "/mentor/messages" },
+    { icon: Bell, label: "Notifications", id: "notifications", path: "/mentor/notifications" },
     { icon: Users, label: "Community", id: "community", path: "/mentor/community" },
     { icon: Settings, label: "Settings", id: "settings", path: "/mentor/settings" },
   ];
@@ -102,7 +113,7 @@ export const DashboardSidebar = ({
             {navItems.map((item) => {
               const isActive = activeView === item.id;
               return (
-                <button
+                <motion.button
                   key={item.id}
                   onClick={() => {
                     if (item.path) {
@@ -112,6 +123,9 @@ export const DashboardSidebar = ({
                     }
                     if (window.innerWidth < 1024) onClose();
                   }}
+                  whileHover={{ scale: 1.02 }}
+                  transition={{ duration: 0.2 }}
+                  title={isCollapsed ? item.label : ""}
                   className={cn(
                     "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 relative group",
                     isActive ? "bg-primary/20 text-primary" : "text-muted-foreground hover:bg-white/5 hover:text-white"
@@ -119,7 +133,7 @@ export const DashboardSidebar = ({
                 >
                   <item.icon size={20} />
                   {!isCollapsed && <span className="text-sm font-medium">{item.label}</span>}
-                </button>
+                </motion.button>
               );
             })}
           </nav>
