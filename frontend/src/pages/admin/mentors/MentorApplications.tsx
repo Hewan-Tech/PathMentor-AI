@@ -1,179 +1,146 @@
-import React, { useEffect, useState } from 'react';
-import { Check, X, FileText } from 'lucide-react';
-import api from '../../../services/api';
-
-interface MentorApplication {
-  _id: string;
-  name: string;
-  email?: string;
-  createdAt?: string;
-  learningProfile?: { skillTrack?: string };
-  mentorVerification?: { status?: string; documents?: string[] };
-}
+import React, { useState, useMemo } from 'react';
+import { Check, X, FileText, Search, Briefcase, UserCheck, Clock, ShieldCheck } from 'lucide-react';
 
 const MentorApplications = () => {
-  const [applications, setApplications] = useState<MentorApplication[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [actionLoading, setActionLoading] = useState<string | null>(null);
-  const [error, setError] = useState('');
+  const [activeTab, setActiveTab] = useState('All');
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const fetchApplications = async () => {
-    setLoading(true);
-    setError('');
+  const apps = [
+    { id: 1, name: "Samuel Kebede", expertise: "React & Node.js", date: "April 24, 2026", status: "Pending", email: "samuel.k@dev.io" },
+    { id: 2, name: "Hana Tadesse", expertise: "Python for AI", date: "April 25, 2026", status: "Under Review", email: "hana.t@tech.et" },
+    { id: 3, name: "Yonas Alemu", expertise: "UI/UX Design", date: "April 20, 2026", status: "Pending", email: "yonas.design@studio.com" },
+    { id: 4, name: "Liya Solomon", expertise: "React & Node.js", date: "April 18, 2026", status: "Approved", email: "liya.s@academy.com" },
+  ];
 
-    try {
-      const res = await api.get('/admin/pending-mentors');
-      const data = res.data;
-      setApplications(Array.isArray(data) ? data : data.mentors || []);
-    } catch (err: any) {
-      console.error('Failed to load mentor applications', err);
-      setError(err?.response?.data?.message || 'Unable to fetch applications');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const tabs = ['All', 'Pending', 'Under Review', 'Approved'];
 
-  const approveApplication = async (id: string) => {
-    setActionLoading(id);
-    try {
-      await api.put(`/admin/mentor/${id}/approve`);
-      setApplications((prev) => prev.filter((app) => app._id !== id));
-    } catch (err) {
-      console.error('Approve failed', err);
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
-  const rejectApplication = async (id: string) => {
-    setActionLoading(id);
-    try {
-      await api.put(`/admin/mentor/${id}/reject`);
-      setApplications((prev) => prev.filter((app) => app._id !== id));
-    } catch (err) {
-      console.error('Reject failed', err);
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
-  useEffect(() => {
-    fetchApplications();
-  }, []);
+  const filteredApps = useMemo(() => {
+    return apps.filter(app => {
+      const matchesTab = activeTab === 'All' || app.status === activeTab;
+      const matchesSearch = app.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                            app.expertise.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesTab && matchesSearch;
+    });
+  }, [activeTab, searchQuery]);
 
   return (
-    <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-500">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+    <div className="p-8 max-w-[1400px] mx-auto space-y-8 animate-in slide-in-from-bottom-4 duration-700">
+      
+      {/* Header & Pipeline Summary */}
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6">
         <div>
-          <h2 className="text-3xl font-bold text-white tracking-tight">Mentor Applications</h2>
-          <p className="text-slate-400 text-sm mt-1">Review mentor onboarding requests and view uploaded CV document links.</p>
+          <h2 className="text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
+            <ShieldCheck className="text-indigo-500" size={32} />
+            Mentor Recruitment
+          </h2>
+          <p className="text-slate-400 text-sm mt-2">Managing the vetting process for expert-led instruction.</p>
+        </div>
+
+        <div className="flex gap-4">
+          <div className="bg-orange-500/10 border border-orange-500/20 px-6 py-3 rounded-2xl">
+            <p className="text-[10px] text-orange-500 uppercase font-black tracking-widest">New Leads</p>
+            <p className="text-2xl font-bold text-white">{apps.filter(a => a.status === 'Pending').length}</p>
+          </div>
+          <div className="bg-cyan-500/10 border border-cyan-500/20 px-6 py-3 rounded-2xl">
+            <p className="text-[10px] text-cyan-500 uppercase font-black tracking-widest">In Review</p>
+            <p className="text-2xl font-bold text-white">{apps.filter(a => a.status === 'Under Review').length}</p>
+          </div>
         </div>
       </div>
 
-      {error && (
-        <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-200">
-          {error}
+      {/* Navigation & Search Utilities */}
+      <div className="flex flex-col md:flex-row gap-4 items-center">
+        <div className="flex bg-slate-900/60 p-1 rounded-2xl border border-white/5 w-full md:w-auto">
+          {tabs.map(tab => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-5 py-2 rounded-xl text-xs font-bold transition-all ${
+                activeTab === tab ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'
+              }`}
+            >
+              {tab}
+            </button>
+          ))}
         </div>
-      )}
 
-      <div className="overflow-hidden rounded-3xl border border-white/10 bg-white/[0.02] backdrop-blur-3xl shadow-2xl">
+        <div className="relative flex-1 w-full">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+          <input 
+            type="text" 
+            placeholder="Search by name or expertise..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-slate-900/40 border border-white/10 rounded-2xl pl-12 pr-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500/50"
+          />
+        </div>
+      </div>
+
+      {/* Applications Data Grid */}
+      <div className="overflow-hidden rounded-[2.5rem] border border-white/10 bg-white/[0.02] backdrop-blur-3xl shadow-2xl">
         <table className="w-full text-left">
-          <thead className="bg-white/5 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
+          <thead className="bg-white/5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 border-b border-white/5">
             <tr>
-              <th className="p-6">Applicant</th>
-              <th className="p-6">Expertise</th>
-              <th className="p-6">Submission Date</th>
-              <th className="p-6">CV</th>
-              <th className="p-6">Status</th>
-              <th className="p-6 text-right">Actions</th>
+              <th className="p-8">Expert Profile</th>
+              <th className="p-6">Domain Expertise</th>
+              <th className="p-6">Applied On</th>
+              <th className="p-6">Review Status</th>
+              <th className="p-8 text-right">Decision Tool</th>
             </tr>
           </thead>
           <tbody className="text-slate-300">
-            {loading ? (
-              <tr>
-                <td colSpan={6} className="p-6 text-center text-slate-400">Loading applications...</td>
+            {filteredApps.map((app) => (
+              <tr key={app.id} className="group border-t border-white/5 hover:bg-white/[0.03] transition-all">
+                <td className="p-8">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-black text-lg shadow-lg group-hover:scale-110 transition-transform">
+                      {app.name.charAt(0)}
+                    </div>
+                    <div>
+                      <span className="font-bold text-white text-base block">{app.name}</span>
+                      <span className="text-xs text-slate-500">{app.email}</span>
+                    </div>
+                  </div>
+                </td>
+                <td className="p-6">
+                  <div className="flex items-center gap-2 text-slate-200 font-medium">
+                    <Briefcase size={14} className="text-indigo-400" />
+                    {app.expertise}
+                  </div>
+                </td>
+                <td className="p-6">
+                  <div className="flex items-center gap-2 text-slate-500 text-sm">
+                    <Clock size={14} />
+                    {app.date}
+                  </div>
+                </td>
+                <td className="p-6">
+                  <span className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-tighter border ${
+                    app.status === 'Pending' ? 'bg-orange-500/10 border-orange-500/20 text-orange-400' : 
+                    app.status === 'Approved' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' :
+                    'bg-cyan-500/10 border-cyan-500/20 text-cyan-400'
+                  }`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${
+                      app.status === 'Pending' ? 'bg-orange-400' : app.status === 'Approved' ? 'bg-emerald-400' : 'bg-cyan-400'
+                    }`} />
+                    {app.status}
+                  </span>
+                </td>
+                <td className="p-8 text-right">
+                  <div className="flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500 hover:text-white transition-all text-xs font-bold" title="Approve">
+                      <UserCheck size={16} /> Approve
+                    </button>
+                    <button className="p-2.5 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-all" title="Reject">
+                      <X size={18} />
+                    </button>
+                    <button className="p-2.5 rounded-xl bg-white/5 text-slate-400 hover:bg-indigo-600 hover:text-white transition-all" title="View Details">
+                      <FileText size={18} />
+                    </button>
+                  </div>
+                </td>
               </tr>
-            ) : applications.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="p-6 text-center text-slate-400">No pending mentor applications found.</td>
-              </tr>
-            ) : (
-              applications.map((app) => {
-                const status = app.mentorVerification?.status || 'Pending';
-                const primaryDoc = app.mentorVerification?.documents?.[0];
-                const formattedDate = app.createdAt
-                  ? new Date(app.createdAt).toLocaleDateString()
-                  : 'Unknown';
-
-                return (
-                  <tr key={app._id} className="border-t border-white/5 hover:bg-white/[0.02] transition-colors">
-                    <td className="p-6">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 font-bold text-xs">
-                          {app.name?.charAt(0) || 'M'}
-                        </div>
-                        <div>
-                          <div className="font-semibold text-white">{app.name || 'Mentor'}</div>
-                          <div className="text-sm text-slate-500">{app.email || 'No email'}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="p-6 text-sm">{app.learningProfile?.skillTrack || 'General Mentor'}</td>
-                    <td className="p-6 text-sm text-slate-500">{formattedDate}</td>
-                    <td className="p-6 text-sm">
-                      {primaryDoc ? (
-                        <a
-                          href={primaryDoc}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-cyan-300 hover:bg-cyan-500/10 hover:text-cyan-100 transition"
-                        >
-                          <FileText size={16} />
-                          View CV
-                        </a>
-                      ) : (
-                        <span className="text-slate-500">No CV uploaded</span>
-                      )}
-                    </td>
-                    <td className="p-6">
-                      <span
-                        className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                          status.toLowerCase() === 'pending'
-                            ? 'bg-orange-500/10 text-orange-400'
-                            : status.toLowerCase() === 'approved'
-                            ? 'bg-emerald-500/10 text-emerald-400'
-                            : status.toLowerCase() === 'rejected'
-                            ? 'bg-red-500/10 text-red-400'
-                            : 'bg-cyan-500/10 text-cyan-400'
-                        }`}
-                      >
-                        {status}
-                      </span>
-                    </td>
-                    <td className="p-6">
-                      <div className="flex justify-end gap-2">
-                        <button
-                          disabled={actionLoading === app._id}
-                          onClick={() => approveApplication(app._id)}
-                          className="rounded-lg bg-emerald-500/10 px-3 py-2 text-emerald-400 hover:bg-emerald-500/20 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
-                          title="Approve"
-                        >
-                          <Check size={16} />
-                        </button>
-                        <button
-                          disabled={actionLoading === app._id}
-                          onClick={() => rejectApplication(app._id)}
-                          className="rounded-lg bg-red-500/10 px-3 py-2 text-red-400 hover:bg-red-500/20 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
-                          title="Reject"
-                        >
-                          <X size={16} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })
-            )}
+            ))}
           </tbody>
         </table>
         

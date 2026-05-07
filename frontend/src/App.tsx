@@ -31,6 +31,7 @@ import MentorReviews from "./pages/admin/mentors/MentorReviews";
 // Admin Student
 import AllStudents from "./pages/admin/students/AllStudents";
 import StudentEnrollments from "./pages/admin/students/StudentEnrollments";
+import StudentProgress from "./pages/admin/students/StudentProgress";
 import GradesStatus from "./pages/admin/students/GradesStatus";
 import StudentReports from "./pages/admin/students/StudentReports";
 
@@ -60,8 +61,7 @@ import Ratings from "./pages/admin/feedback/Ratings";
 import AdminTeam from "./pages/admin/settings/AdminTeam";
 import SystemSettings from "./pages/admin/settings/SystemSettings";
 import ProfileSettings from "./pages/admin/settings/ProfileSettings";
-import DeveloperTools from "./pages/admin/settings/DeveloperTools";
-import Messages from "./pages/mentor/Messages";
+
 
 const queryClient = new QueryClient();
 
@@ -102,7 +102,7 @@ const App = () => (
             {/* Student Management */}
             <Route path="allstudents" element={<AllStudents />} />
             <Route path="enrollments" element={<StudentEnrollments />} />
-            <Route path="progress" element={<AdminStudentProgress />} />
+            <Route path="progress" element={<StudentProgress />} />
             <Route path="grades" element={<GradesStatus />} />
             <Route path="reports" element={<StudentReports />} />
             
