@@ -31,7 +31,6 @@ import MentorReviews from "./pages/admin/mentors/MentorReviews";
 // Admin Student
 import AllStudents from "./pages/admin/students/AllStudents";
 import StudentEnrollments from "./pages/admin/students/StudentEnrollments";
-import StudentProgress from "./pages/admin/students/StudentProgress";
 import GradesStatus from "./pages/admin/students/GradesStatus";
 import StudentReports from "./pages/admin/students/StudentReports";
 
@@ -59,12 +58,10 @@ import Ratings from "./pages/admin/feedback/Ratings";
 
 // --- NEW: Admin Settings ---
 import AdminTeam from "./pages/admin/settings/AdminTeam";
-import RolesPermissions from "./pages/admin/settings/RolesPermissions";
 import SystemSettings from "./pages/admin/settings/SystemSettings";
 import ProfileSettings from "./pages/admin/settings/ProfileSettings";
 import DeveloperTools from "./pages/admin/settings/DeveloperTools";
-
-
+import Messages from "./pages/mentor/Messages";
 
 const queryClient = new QueryClient();
 
@@ -105,7 +102,7 @@ const App = () => (
             {/* Student Management */}
             <Route path="allstudents" element={<AllStudents />} />
             <Route path="enrollments" element={<StudentEnrollments />} />
-            <Route path="progress" element={<StudentProgress />} />
+            <Route path="progress" element={<AdminStudentProgress />} />
             <Route path="grades" element={<GradesStatus />} />
             <Route path="reports" element={<StudentReports />} />
             
@@ -134,9 +131,7 @@ const App = () => (
                        {/* Settings */}
             <Route path="settings/profile" element={<ProfileSettings />} />
             <Route path="settings/team" element={<AdminTeam />} />
-            <Route path="settings/roles" element={<RolesPermissions />} />
             <Route path="settings/system" element={<SystemSettings />} />
-            <Route path="settings/dev" element={<DeveloperTools />} />
           </Route>
 
           {/* 404 */}

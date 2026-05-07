@@ -31,34 +31,40 @@ const AllMentors = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {mentors.map((mentor) => (
-          <div key={mentor.id} className="group relative bg-white/[0.03] backdrop-blur-3xl border border-white/10 rounded-3xl p-6 hover:border-cyan-500/30 transition-all duration-300 shadow-xl">
-            <div className="flex justify-between items-start mb-4">
-              <img src={mentor.image} className="w-16 h-16 rounded-2xl object-cover border border-white/10" alt={mentor.name} />
-              <button className="text-slate-500 hover:text-white transition-colors">
-                <MoreVertical size={20} />
-              </button>
-            </div>
-            <h3 className="text-lg font-bold text-white">{mentor.name}</h3>
-            <p className="text-cyan-400 text-xs font-bold uppercase tracking-wider mb-6">{mentor.role}</p>
-            
-            <div className="grid grid-cols-2 gap-4 py-4 border-t border-white/5">
-              <div>
-                <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Students</p>
-                <p className="text-white font-bold">{mentor.students}</p>
+        {loading ? (
+          <div className="col-span-full text-slate-300">Loading mentors...</div>
+        ) : mentorCards.length ? (
+          mentorCards.map((mentor) => (
+            <div key={mentor.id} className="group relative bg-white/[0.03] backdrop-blur-3xl border border-white/10 rounded-3xl p-6 hover:border-cyan-500/30 transition-all duration-300 shadow-xl">
+              <div className="flex justify-between items-start mb-4">
+                <img src={mentor.image} className="w-16 h-16 rounded-2xl object-cover border border-white/10" alt={mentor.name} />
+                <button className="text-slate-500 hover:text-white transition-colors">
+                  <MoreVertical size={20} />
+                </button>
               </div>
-              <div>
-                <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Rating</p>
-                <div className="flex items-center gap-1 text-amber-400 font-bold">
-                  <Star size={12} fill="currentColor" /> {mentor.rating}
+              <h3 className="text-lg font-bold text-white">{mentor.name}</h3>
+              <p className="text-cyan-400 text-xs font-bold uppercase tracking-wider mb-6">{mentor.role}</p>
+              
+              <div className="grid grid-cols-2 gap-4 py-4 border-t border-white/5">
+                <div>
+                  <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Status</p>
+                  <p className="text-white font-bold">{mentor.students}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Rating</p>
+                  <div className="flex items-center gap-1 text-amber-400 font-bold">
+                    <Star size={12} fill="currentColor" /> {mentor.rating}
+                  </div>
                 </div>
               </div>
+              <button className="w-full mt-4 py-2 rounded-xl bg-white/5 text-white text-xs font-bold hover:bg-white/10 transition-colors border border-white/5">
+                View Full Profile
+              </button>
             </div>
-            <button className="w-full mt-4 py-2 rounded-xl bg-white/5 text-white text-xs font-bold hover:bg-white/10 transition-colors border border-white/5">
-              View Full Profile
-            </button>
-          </div>
-        ))}
+          ))
+        ) : (
+          <div className="col-span-full text-slate-300">No mentors found.</div>
+        )}
       </div>
     </div>
   );

@@ -109,9 +109,7 @@ const AdminLayout = () => {
       items: [
         { icon: Users, label: "Profile Settings", path: "/admin/settings/profile" },
         { icon: UserPlus, label: "Admin Team", path: "/admin/settings/team" },
-        { icon: Lock, label: "Roles & Permissions", path: "/admin/settings/roles" },
         { icon: Cog, label: "System Settings", path: "/admin/settings/system" },
-        { icon: Terminal, label: "Developer Tools", path: "/admin/settings/dev" },
       ]
     }
   ];
