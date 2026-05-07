@@ -17,7 +17,7 @@ import {
   Bell,
 } from "lucide-react";
 const menuItems = [
-  { name: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
+  { name: "Dashboard", path: "/mentor/dashboard", icon: LayoutDashboard },
   { name: "My courses", path: "/mentor/my-classes", icon: BookOpen },
   { name: "Students", path: "/mentor/students", icon: Users },
   { name: "Grades", path: "/mentor/grades", icon: Award },
