@@ -28,6 +28,22 @@ const MentorPendingDashboard = () => {
   const [loading, setLoading] = useState(true);
 
   const [mentor, setMentor] = useState<any>(null);
+  const [isEditing, setIsEditing] = useState(true);
+  const [applicationData, setApplicationData] = useState({
+    skillTrack: "",
+    experienceLevel: "",
+    commitmentTime: "",
+    learningStyle: "",
+    learningGoal: "",
+    personalGoal: "",
+    persona: "",
+    strengths: "",
+    recommendation: "",
+  });
+  const [selectedDocuments, setSelectedDocuments] = useState<File[]>([]);
+  const [savingApplication, setSavingApplication] = useState(false);
+  const [applicationError, setApplicationError] = useState("");
+  const [applicationSuccess, setApplicationSuccess] = useState("");
 
   useEffect(() => {
     loadData();
@@ -51,12 +67,37 @@ const MentorPendingDashboard = () => {
       }
 
       // If approved go to real mentor dashboard
-      if (user.approvalStatus === "approved") {
+      if (user.mentorVerification?.status === "approved") {
         navigate("/mentor/dashboard");
         return;
       }
 
       setMentor(user);
+      const savedProfile = user.learningProfile || {};
+      const hasSubmittedApplication = Boolean(
+        savedProfile.skillTrack ||
+        savedProfile.experienceLevel ||
+        savedProfile.commitmentTime ||
+        savedProfile.learningStyle ||
+        savedProfile.learningGoal ||
+        savedProfile.personalGoal ||
+        savedProfile.persona ||
+        (savedProfile.strengths && savedProfile.strengths.length) ||
+        savedProfile.recommendation
+      );
+
+      setApplicationData({
+        skillTrack: savedProfile.skillTrack || "",
+        experienceLevel: savedProfile.experienceLevel || "",
+        commitmentTime: savedProfile.commitmentTime || "",
+        learningStyle: savedProfile.learningStyle || "",
+        learningGoal: savedProfile.learningGoal || "",
+        personalGoal: savedProfile.personalGoal || "",
+        persona: savedProfile.persona || "",
+        strengths: Array.isArray(savedProfile.strengths) ? savedProfile.strengths.join(", ") : "",
+        recommendation: savedProfile.recommendation || "",
+      });
+      setIsEditing(!hasSubmittedApplication);
     } catch (error) {
       navigate("/auth");
     } finally {
@@ -69,8 +110,69 @@ const MentorPendingDashboard = () => {
     navigate("/auth");
   };
 
+  const handleApplicationChange = (field: string, value: string) => {
+    setApplicationData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const toggleEditMode = () => {
+    setIsEditing(true);
+    setApplicationSuccess("");
+    setApplicationError("");
+  };
+
+  const handleDocumentSelection = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files) {
+      setSelectedDocuments(Array.from(files));
+    }
+  };
+
+  const submitApplication = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setApplicationError("");
+    setApplicationSuccess("");
+    setSavingApplication(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("skillTrack", applicationData.skillTrack);
+      formData.append("experienceLevel", applicationData.experienceLevel);
+      formData.append("commitmentTime", applicationData.commitmentTime);
+      formData.append("learningStyle", applicationData.learningStyle);
+      formData.append("learningGoal", applicationData.learningGoal);
+      formData.append("personalGoal", applicationData.personalGoal);
+      formData.append("persona", applicationData.persona);
+      formData.append("strengths", applicationData.strengths);
+      formData.append("recommendation", applicationData.recommendation);
+
+      selectedDocuments.forEach((file) => {
+        formData.append("documents", file);
+      });
+
+      await api.post("/users/onboarding", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      setApplicationSuccess("Application information saved successfully. Admin review is in progress.");
+      setSelectedDocuments([]);
+      setIsEditing(false);
+      await loadData();
+    } catch (error: any) {
+      console.error("Application submit failed", error);
+      setApplicationError(
+        error?.response?.data?.message || error?.message || "Unable to save application. Please try again."
+      );
+    } finally {
+      setSavingApplication(false);
+    }
+  };
+
   const getStatusUI = () => {
-    if (mentor?.approvalStatus === "approved") {
+    const status = mentor?.mentorVerification?.status;
+
+    if (status === "approved") {
       return {
         text: "Approved",
         color: "text-emerald-400",
@@ -79,7 +181,7 @@ const MentorPendingDashboard = () => {
       };
     }
 
-    if (mentor?.approvalStatus === "rejected") {
+    if (status === "rejected") {
       return {
         text: "Rejected",
         color: "text-red-400",
@@ -105,6 +207,7 @@ const MentorPendingDashboard = () => {
   }
 
   const status = getStatusUI();
+  const displayedProfile = isEditing ? applicationData : mentor?.learningProfile || {};
 
   return (
     <div className="min-h-screen bg-[#020617] text-white relative overflow-hidden">
@@ -196,11 +299,185 @@ const MentorPendingDashboard = () => {
               </div>
 
               <p className="text-slate-400 max-w-md text-sm">
-                Your mentor profile is being reviewed by the
-                admin team. You’ll gain dashboard access once
-                approved.
+                Your mentor profile is being reviewed by the admin team. Update your details below while approval is in progress.
               </p>
             </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 25 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="rounded-3xl border border-white/10 bg-white/[0.06] backdrop-blur-2xl p-8"
+          >
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+              <div>
+                <h3 className="text-2xl font-bold">Complete Your Mentor Application</h3>
+                <p className="text-slate-400 text-sm mt-1">
+                  Fill in the details needed for admin review. When the application is submitted, fields become read-only until you choose to edit.
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-slate-500 uppercase tracking-[0.3em] font-semibold">
+                  Application details
+                </span>
+                {!isEditing && (
+                  <button
+                    type="button"
+                    onClick={toggleEditMode}
+                    className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold text-white hover:bg-white/10"
+                  >
+                    Edit
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {applicationError && (
+              <div className="rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-200 mb-4">
+                {applicationError}
+              </div>
+            )}
+
+            {applicationSuccess && (
+              <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-200 mb-4">
+                {applicationSuccess}
+              </div>
+            )}
+
+            <form onSubmit={submitApplication} className="grid gap-4 lg:grid-cols-2">
+              <label className="space-y-2 text-sm text-slate-200">
+                Expertise Track
+                <input
+                  value={applicationData.skillTrack}
+                  onChange={(event) => handleApplicationChange("skillTrack", event.target.value)}
+                  placeholder="e.g. Web Development"
+                  disabled={!isEditing}
+                  className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+                />
+              </label>
+
+              <label className="space-y-2 text-sm text-slate-200">
+                Experience Level
+                <input
+                  value={applicationData.experienceLevel}
+                  onChange={(event) => handleApplicationChange("experienceLevel", event.target.value)}
+                  placeholder="e.g. 5+ years"
+                  disabled={!isEditing}
+                  className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+                />
+              </label>
+
+              <label className="space-y-2 text-sm text-slate-200">
+                Availability
+                <input
+                  value={applicationData.commitmentTime}
+                  onChange={(event) => handleApplicationChange("commitmentTime", event.target.value)}
+                  placeholder="e.g. 10 hours/week"
+                  disabled={!isEditing}
+                  className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+                />
+              </label>
+
+              <label className="space-y-2 text-sm text-slate-200">
+                Teaching Style
+                <input
+                  value={applicationData.learningStyle}
+                  onChange={(event) => handleApplicationChange("learningStyle", event.target.value)}
+                  placeholder="e.g. hands-on, project-based"
+                  disabled={!isEditing}
+                  className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+                />
+              </label>
+
+              <label className="space-y-2 text-sm text-slate-200 lg:col-span-2">
+                Mentor Goal
+                <input
+                  value={applicationData.learningGoal}
+                  onChange={(event) => handleApplicationChange("learningGoal", event.target.value)}
+                  placeholder="What outcomes will your mentees achieve?"
+                  disabled={!isEditing}
+                  className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+                />
+              </label>
+
+              <label className="space-y-2 text-sm text-slate-200 lg:col-span-2">
+                Personal Mission
+                <input
+                  value={applicationData.personalGoal}
+                  onChange={(event) => handleApplicationChange("personalGoal", event.target.value)}
+                  placeholder="Why do you want to mentor learners?"
+                  disabled={!isEditing}
+                  className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+                />
+              </label>
+
+              <label className="space-y-2 text-sm text-slate-200">
+                Mentor Persona
+                <input
+                  value={applicationData.persona}
+                  onChange={(event) => handleApplicationChange("persona", event.target.value)}
+                  placeholder="e.g. Career coach, technical instructor"
+                  disabled={!isEditing}
+                  className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+                />
+              </label>
+
+              <label className="space-y-2 text-sm text-slate-200">
+                Strengths
+                <input
+                  value={applicationData.strengths}
+                  onChange={(event) => handleApplicationChange("strengths", event.target.value)}
+                  placeholder="List your strengths, separated by commas"
+                  disabled={!isEditing}
+                  className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+                />
+              </label>
+
+              <label className="space-y-2 text-sm text-slate-200 lg:col-span-2">
+                Upload CV / Certificates
+                <input
+                  type="file"
+                  accept="application/pdf"
+                  multiple
+                  onChange={handleDocumentSelection}
+                  disabled={!isEditing}
+                  className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white file:border-0 file:bg-slate-800 file:px-4 file:py-2 file:text-sm file:text-white file:rounded-xl file:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                />
+                {selectedDocuments.length > 0 && (
+                  <p className="text-xs text-slate-400 mt-1">
+                    Selected: {selectedDocuments.map((file) => file.name).join(", ")}
+                  </p>
+                )}
+              </label>
+
+              <label className="space-y-2 text-sm text-slate-200 lg:col-span-2">
+                Why should you be a mentor?
+                <textarea
+                  value={applicationData.recommendation}
+                  onChange={(event) => handleApplicationChange("recommendation", event.target.value)}
+                  placeholder="Explain why you are the right mentor for learners"
+                  rows={4}
+                  disabled={!isEditing}
+                  className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 resize-none disabled:cursor-not-allowed disabled:opacity-50"
+                />
+              </label>
+
+              <div className="lg:col-span-2 flex flex-col sm:flex-row items-center gap-3 pt-2">
+                <button
+                  type="submit"
+                  disabled={savingApplication || !isEditing}
+                  className="rounded-2xl bg-[#33b6ff] px-5 py-3 text-sm font-semibold text-black transition hover:bg-[#22a1f0] disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {savingApplication ? "Saving..." : isEditing ? "Save Application" : "Locked"}
+                </button>
+                <p className="text-sm text-slate-400">
+                  {isEditing
+                    ? "This information helps admin verify your mentor profile."
+                    : "Submitted application is locked. Click Edit to make changes."}
+                </p>
+              </div>
+            </form>
           </motion.div>
 
           {/* Grid */}
@@ -232,15 +509,13 @@ const MentorPendingDashboard = () => {
                 <InfoCard
                   icon={<Briefcase size={18} />}
                   title="Expertise"
-                  value={mentor?.expertise || "Software Engineering"}
+                  value={displayedProfile.skillTrack || "Software Engineering"}
                 />
 
                 <InfoCard
                   icon={<BadgeCheck size={18} />}
                   title="Experience"
-                  value={
-                    mentor?.experience || "3+ Years Experience"
-                  }
+                  value={displayedProfile.experienceLevel || "3+ Years Experience"}
                 />
 
                 <InfoCard
@@ -258,20 +533,18 @@ const MentorPendingDashboard = () => {
                 <InfoCard
                   icon={<FileText size={18} />}
                   title="Documents"
-                  value="CV + Certificates Uploaded"
+                  value={
+                    isEditing
+                      ? selectedDocuments.length
+                        ? `${selectedDocuments.length} file(s) selected`
+                        : mentor?.mentorVerification?.documents?.length
+                        ? `${mentor.mentorVerification.documents.length} file(s) uploaded`
+                        : "No documents uploaded"
+                      : mentor?.mentorVerification?.documents?.length
+                      ? `${mentor.mentorVerification.documents.length} file(s) uploaded`
+                      : "No documents uploaded"
+                  }
                 />
-              </div>
-
-              {/* Bio */}
-              <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.04] p-5">
-                <p className="text-sm text-slate-400 uppercase tracking-widest font-bold mb-2">
-                  Professional Bio
-                </p>
-
-                <p className="text-slate-200 leading-relaxed">
-                  {mentor?.bio ||
-                    "Experienced mentor passionate about guiding students in career growth, coding skills and professional development."}
-                </p>
               </div>
             </motion.div>
 

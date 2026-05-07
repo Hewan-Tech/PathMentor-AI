@@ -48,7 +48,10 @@ const AdminLayout = () => {
   const menuGroups = [
     {
       title: "Overview",
-      items: [{ icon: LayoutDashboard, label: "Dashboard", path: "/admin/dashboard" }]
+      items: [
+        { icon: LayoutDashboard, label: "Dashboard", path: "/admin/dashboard" },
+        { icon: Activity, label: "Activities", path: "/admin/activities" }, // New Item
+      ]
     },
     {
       title: "Mentors",

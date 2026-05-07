@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom"; // Added Link import
 import {
   LayoutDashboard,
   BookOpen,
@@ -32,18 +33,18 @@ export const DashboardSidebar = ({
   pendingMode = false,
 }: DashboardSidebarProps) => {
   const normalNavItems = [
-    { icon: LayoutDashboard, label: "Dashboard", id: "dashboard" },
-    { icon: BookOpen, label: "My courses", id: "courses" },
-    { icon: BarChart, label: "Progress", id: "progress" },
-    { icon: FolderKanban, label: "Projects", id: "projects" },
-    { icon: Users, label: "Community", id: "community" },
-    { icon: Settings, label: "Settings", id: "settings" },
+    { icon: LayoutDashboard, label: "Dashboard", id: "dashboard", path: "/mentor/dashboard" },
+    { icon: BookOpen, label: "My courses", id: "courses", path: "/mentor/courses" },
+    { icon: BarChart, label: "Progress", id: "progress", path: "/mentor/progress" },
+    { icon: FolderKanban, label: "Projects", id: "projects", path: "/mentor/projects" },
+    { icon: Users, label: "Community", id: "community", path: "/mentor/community" },
+    { icon: Settings, label: "Settings", id: "settings", path: "/mentor/settings" },
   ];
 
   const pendingNavItems = [
-    { icon: ShieldCheck, label: "Application", id: "application" },
-    { icon: Clock3, label: "Status", id: "status" },
-    { icon: Settings, label: "Settings", id: "settings" },
+    { icon: ShieldCheck, label: "Application", id: "application", path: "/mentor/pending" },
+    { icon: Clock3, label: "Status", id: "status", path: "/mentor/pending" },
+    { icon: Settings, label: "Settings", id: "settings", path: "/mentor/settings" },
   ];
 
   const navItems = pendingMode ? pendingNavItems : normalNavItems;
@@ -91,8 +92,9 @@ export const DashboardSidebar = ({
             {navItems.map((item) => {
               const isActive = activeView === item.id;
               return (
-                <button
+                <Link
                   key={item.id}
+                  to={item.path}
                   onClick={() => {
                     onViewChange(item.id);
                     if (window.innerWidth < 1024) onClose();
@@ -104,7 +106,7 @@ export const DashboardSidebar = ({
                 >
                   <item.icon size={20} />
                   {!isCollapsed && <span className="text-sm font-medium">{item.label}</span>}
-                </button>
+                </Link>
               );
             })}
           </nav>

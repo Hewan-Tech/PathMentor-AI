@@ -3,31 +3,56 @@ import { useNavigate } from "react-router-dom";
 import api from "@/services/api";
 import { DashboardTopNav } from "@/components/dashboard/DashboardTopNav";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
-import {
-  MessageSquare,
-  Star,
-  Activity,
-} from "lucide-react";
-import {
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  AreaChart,
-  Area,
-} from "recharts";
 import { motion } from "framer-motion";
 import { ParticlesBackground } from "@/components/landing/ParticlesBackground";
+import { MessageSquare, Star, Activity, X } from "lucide-react";
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  XAxis,
+  Tooltip,
+} from "recharts";
 
-/* ================= MOCK ACTIVITY DATA ================= */
+/* ================= ACTIVITY DATA ================= */
 
 const activityData = [
-  { name: "Mon", val: 400 },
-  { name: "Tue", val: 300 },
-  { name: "Wed", val: 600 },
-  { name: "Thu", val: 800 },
-  { name: "Fri", val: 500 },
-  { name: "Sat", val: 900 },
-  { name: "Sun", val: 750 },
+  { name: "Mon", value: 40 },
+  { name: "Tue", value: 60 },
+  { name: "Wed", value: 30 },
+  { name: "Thu", value: 80 },
+  { name: "Fri", value: 55 },
+  { name: "Sat", value: 90 },
+  { name: "Sun", value: 70 },
+];
+
+/* ================= REVIEW QUEUE DATA ================= */
+
+const reviewQueue = [
+  {
+    id: 1,
+    student: "Abel Tesfaye",
+    avatar: "https://i.pravatar.cc/100?img=12",
+    course: "React Mastery",
+    rating: 5,
+    comment: "Amazing teaching style! Very clear and practical.",
+  },
+  {
+    id: 2,
+    student: "Selam Worku",
+    avatar: "https://i.pravatar.cc/100?img=5",
+    course: "Node.js Backend",
+    rating: 4,
+    comment: "Good content but more real-world examples needed.",
+  },
+  {
+    id: 3,
+    student: "Hana Mekonnen",
+    avatar: "https://i.pravatar.cc/100?img=8",
+    course: "UI/UX Design",
+    rating: 5,
+    comment: "Loved the explanations and design breakdowns!",
+  },
 ];
 
 /* ================= MAIN DASHBOARD ================= */
@@ -35,17 +60,13 @@ const activityData = [
 const MentorDashboard = () => {
   const navigate = useNavigate();
 
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [mentees, setMentees] = useState<any[]>([]);
-  const [reviews, setReviews] = useState<any[]>([]);
-  const [stats, setStats] = useState<any>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(true); // 👈 START OPEN ON PC
+const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [loading, setLoading] = useState(true);
-
-  /* ================= AUTH + STATUS GUARD ================= */
+  const [showReviews, setShowReviews] = useState(false);
 
   useEffect(() => {
-    const checkAuthAndStatus = async () => {
+    const checkAuth = async () => {
       const token = localStorage.getItem("token");
 
       if (!token) {
@@ -55,38 +76,27 @@ const MentorDashboard = () => {
 
       try {
         const res = await api.get("/users/profile");
-        const user = res.data.user;
+        const user = res.data?.user;
 
-        if (user.role !== "mentor") {
-          navigate("/dashboard");
+        console.log("USER FROM API:", user); // 🔍 DEBUG (remove later)
+
+        const role = user?.role?.toLowerCase().trim();
+
+        if (!user || role !== "mentor") {
+          navigate("/auth"); // 🔥 FIXED (better than /dashboard)
           return;
         }
-
-        fetchMentorData();
       } catch (err) {
+        console.log("AUTH ERROR:", err);
         navigate("/auth");
+        return;
       } finally {
         setLoading(false);
       }
     };
 
-    checkAuthAndStatus();
+    checkAuth();
   }, [navigate]);
-
-  /* ================= FETCH DATA ================= */
-
-  const fetchMentorData = async () => {
-    try {
-      const res = await api.get("/mentor/dashboard");
-      setMentees(res.data.mentees || []);
-      setReviews(res.data.reviews || []);
-      setStats(res.data.stats || null);
-    } catch (err) {
-      console.error("Failed to load mentor data");
-    }
-  };
-
-  /* ================= LOADING ================= */
 
   if (loading) {
     return (
@@ -96,19 +106,23 @@ const MentorDashboard = () => {
     );
   }
 
-  /* ================= UI ================= */
-
   return (
-    <div className="min-h-screen relative bg-[#020617] text-white overflow-hidden font-sans">
-      {/* BACKGROUND */}
+    <div className="min-h-screen relative bg-[#020617] text-white overflow-hidden">
+
+      {/* PARTICLES */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <ParticlesBackground />
-
-        <div className="absolute top-[-10%] left-[-10%] w-[800px] h-[800px] bg-[#33b6ff]/10 rounded-full blur-[150px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[800px] h-[800px] bg-[#a855f7]/10 rounded-full blur-[150px]" />
       </div>
 
-      {/* NAVBAR */}
+      {/* HERO BACKGROUND */}
+      <div className="absolute top-0 left-0 w-full h-[420px] z-0">
+        <img
+          src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=2000&q=80"
+          className="w-full h-full object-cover opacity-25"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#020617]/50 via-[#020617]/80 to-[#020617]" />
+      </div>
+
       <DashboardTopNav
         userName="Lead Mentor"
         userEmail="mentor@pathmentor.ai"
@@ -119,7 +133,6 @@ const MentorDashboard = () => {
         onMenuToggle={() => setSidebarOpen(!sidebarOpen)}
       />
 
-      {/* SIDEBAR */}
       <DashboardSidebar
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
@@ -129,172 +142,143 @@ const MentorDashboard = () => {
         }
       />
 
-      {/* MAIN */}
       <main
-        className={`relative z-10 pt-28 pb-16 transition-all duration-500 ${
+        className={`relative z-10 pt-28 pb-16 transition-all duration-300 ${
           sidebarCollapsed ? "lg:pl-28" : "lg:pl-80"
         }`}
       >
-        <div className="max-w-7xl mx-auto px-6 space-y-12">
-          <MainMentorView mentees={mentees} stats={stats} />
+        <div className="relative z-10 max-w-7xl mx-auto px-6 space-y-10 pt-10">
+
+          {/* HERO */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-3"
+          >
+            <h1 className="text-5xl font-extrabold">
+              Welcome back,{" "}
+              <span className="text-[#33b6ff]">Mentor</span>
+            </h1>
+
+            <p className="text-white/60">
+              Manage your students, courses, and teaching activity
+            </p>
+
+            <div className="flex gap-4 mt-6">
+              <button
+                onClick={() => navigate("/mentor/courses")}
+                className="px-6 py-3 bg-[#33b6ff] text-black font-bold rounded-xl hover:shadow-[0_0_25px_rgba(51,182,255,0.4)] transition"
+              >
+                My Classes
+              </button>
+
+              <button
+                onClick={() => navigate("/mentor/projects")}
+                className="px-6 py-3 bg-white/10 rounded-xl hover:bg-white/20 transition"
+              >
+                Projects & Quizzes
+              </button>
+
+              <button
+                onClick={() => setShowReviews(true)}
+                className="px-6 py-3 bg-white/10 rounded-xl hover:bg-white/20 transition"
+              >
+                Review Queue
+              </button>
+            </div>
+          </motion.div>
+
+          {/* STATS */}
+          <div className="grid md:grid-cols-3 gap-6">
+            <div
+  onClick={() => navigate("/mentor/messages?filter=unread")}
+  className="p-6 rounded-2xl bg-white/[0.04] border border-white/10 
+             cursor-pointer transition hover:scale-[1.03] 
+             hover:bg-[#33b6ff]/10 active:scale-[0.98]"
+>
+  <MessageSquare className="mb-3 text-[#33b6ff]" />
+
+  <h3 className="text-xl font-bold">24</h3>
+  <p className="text-white/60">New Messages</p>
+</div>
+
+            <div className="p-6 rounded-2xl bg-white/[0.04] border border-white/10">
+              <Star className="mb-3 text-[#33b6ff]" />
+              <h3 className="text-xl font-bold">4.8</h3>
+              <p className="text-white/60">Average Rating</p>
+            </div>
+
+            <div className="p-6 rounded-2xl bg-white/[0.04] border border-white/10">
+              <Activity className="mb-3 text-[#33b6ff]" />
+              <h3 className="text-xl font-bold">78%</h3>
+              <p className="text-white/60">Engagement</p>
+            </div>
+          </div>
+
+          {/* CHART */}
+          <div className="p-6 rounded-2xl bg-white/[0.04] border border-white/10">
+            <h2 className="text-xl font-bold mb-4">
+              Weekly Activity
+            </h2>
+
+            <ResponsiveContainer width="100%" height={250}>
+              <AreaChart data={activityData}>
+                <XAxis dataKey="name" stroke="#888" />
+                <Tooltip />
+                <Area
+                  type="monotone"
+                  dataKey="value"
+                  stroke="#33b6ff"
+                  fill="#33b6ff33"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+
         </div>
       </main>
+
+      {/* REVIEW MODAL */}
+      {showReviews && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="w-full max-w-4xl bg-[#0b1220] border border-white/10 rounded-2xl p-6 max-h-[90vh] overflow-y-auto">
+
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold">⭐ Review Queue</h2>
+              <button
+                onClick={() => setShowReviews(false)}
+                className="p-2 bg-white/10 rounded-lg"
+              >
+                <X />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {reviewQueue.map((r) => (
+                <div
+                  key={r.id}
+                  className="p-4 bg-white/[0.04] border border-white/10 rounded-xl flex gap-4"
+                >
+                  <img src={r.avatar} className="w-12 h-12 rounded-full" />
+
+                  <div>
+                    <h3 className="font-semibold">{r.student}</h3>
+                    <p className="text-white/50 text-sm">{r.course}</p>
+                    <p className="text-white/70 text-sm mt-1">{r.comment}</p>
+                    <p className="text-yellow-400 text-sm mt-1">
+                      ⭐ {r.rating}/5
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
 
-/* ================= VIEW COMPONENT ================= */
-
-const MainMentorView = ({ mentees, stats }: any) => (
-  <motion.div
-    initial={{ opacity: 0, y: 25 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.4 }}
-    className="space-y-12"
-  >
-    {/* HEADER */}
-    <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-      <div>
-        <h1 className="text-5xl font-extrabold tracking-tight leading-tight">
-          Mentor <span className="text-[#33b6ff]">Nexus</span>
-        </h1>
-
-        <p className="text-slate-400 text-xs mt-3 flex items-center gap-2 tracking-widest uppercase font-bold">
-          <Activity size={14} className="text-[#33b6ff]" />
-          Live Performance Analytics
-        </p>
-      </div>
-
-      <div className="flex gap-4">
-        <button className="px-6 py-3 rounded-xl bg-white/[0.04] border border-white/10 hover:bg-white/10 transition-all font-semibold text-sm backdrop-blur-xl">
-          Review Queue
-        </button>
-
-        <button className="px-6 py-3 rounded-xl bg-[#33b6ff] text-black font-bold text-sm hover:shadow-[0_0_30px_rgba(51,182,255,0.45)] transition-all">
-          Assign Task
-        </button>
-      </div>
-    </header>
-
-    {/* GRID */}
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      {/* TOP MENTEE */}
-      <div className="lg:col-span-2 relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.06] backdrop-blur-2xl p-8 shadow-[0_20px_80px_rgba(0,0,0,0.35)]">
-        <div className="absolute -top-32 -right-32 w-[400px] h-[400px] bg-[#33b6ff]/20 blur-[140px] rounded-full" />
-
-        <h3 className="font-bold text-lg mb-8 flex items-center gap-2 tracking-tight">
-          <Star className="text-[#33b6ff] w-5 h-5 fill-[#33b6ff]" />
-          Top Performing Mentee
-        </h3>
-
-        <div className="flex items-center gap-8">
-          <div className="h-24 w-24 rounded-3xl bg-gradient-to-tr from-[#33b6ff] to-[#a855f7] p-[2px]">
-            <div className="w-full h-full rounded-3xl bg-[#020617] flex items-center justify-center font-extrabold text-3xl">
-              {stats?.topMentee?.name?.[0] || "S"}
-            </div>
-          </div>
-
-          <div>
-            <h4 className="font-extrabold text-3xl tracking-tight">
-              {stats?.topMentee?.name || "Neural Learner"}
-            </h4>
-
-            <div className="flex items-center gap-3 mt-2">
-              <span className="text-xs bg-[#33b6ff]/10 text-[#33b6ff] px-4 py-1 rounded-full font-bold uppercase tracking-wide">
-                {stats?.topMentee?.score || "98"}% Mastery
-              </span>
-
-              <span className="text-xs text-slate-500 font-semibold">
-                Lvl 7 Roadmap
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* INQUIRIES */}
-      <div className="rounded-3xl border border-white/10 bg-white/[0.05] backdrop-blur-2xl p-8 shadow-xl">
-        <h3 className="font-bold text-lg mb-6 tracking-tight">
-          Direct <span className="text-[#a855f7]">Inquiries</span>
-        </h3>
-
-        <div className="space-y-4">
-          {[1, 2].map((i) => (
-            <div
-              key={i}
-              className="flex items-center gap-4 p-4 bg-white/[0.03] border border-white/5 rounded-xl hover:bg-white/10 transition cursor-pointer"
-            >
-              <div className="p-3 rounded-xl bg-[#a855f7]/10 text-[#a855f7]">
-                <MessageSquare size={18} />
-              </div>
-
-              <div>
-                <h4 className="font-semibold text-sm">
-                  Node Block #{i}02
-                </h4>
-                <p className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">
-                  Stuck on Async Patterns
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* CHART */}
-      <div className="lg:col-span-3 rounded-3xl border border-white/10 bg-white/[0.06] backdrop-blur-2xl p-10 shadow-[0_20px_80px_rgba(0,0,0,0.35)]">
-        <div className="flex justify-between items-center mb-8">
-          <h3 className="font-extrabold text-3xl tracking-tight">
-            Engagement <span className="text-[#33b6ff]">Neural-Flow</span>
-          </h3>
-
-          <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-slate-400 font-bold">
-            <div className="w-3 h-3 rounded-full bg-[#33b6ff]" />
-            Student Interaction Index
-          </div>
-        </div>
-
-        <div className="h-72 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={activityData}>
-              <defs>
-                <linearGradient id="colorVal" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#33b6ff" stopOpacity={0.35}/>
-                  <stop offset="95%" stopColor="#33b6ff" stopOpacity={0}/>
-                </linearGradient>
-              </defs>
-
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "#020617",
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  borderRadius: "12px",
-                  fontWeight: "bold",
-                }}
-                itemStyle={{ color: "#33b6ff" }}
-              />
-
-              <XAxis
-                dataKey="name"
-                axisLine={false}
-                tickLine={false}
-                tick={{ fill: "#64748b", fontSize: 12, fontWeight: 700 }}
-              />
-
-              <Area
-                type="monotone"
-                dataKey="val"
-                stroke="#33b6ff"
-                strokeWidth={3}
-                fillOpacity={1}
-                fill="url(#colorVal)"
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-    </div>
-  </motion.div>
-);
-
-export default MentorDashboard;
+export default MentorDashboard; 
