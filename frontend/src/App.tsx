@@ -9,9 +9,19 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Register from "./pages/Register";
 import Roadmap from "./pages/Roadmap";
-import Dashboard from "./pages/Dashboard";
+import Dashboard from "./pages/students/Dashboard";
 import ProfilePage from "./pages/ProfilePage";
 import NotFound from "./pages/NotFound";
+
+//Students page
+import dashboard from "./pages/students/Dashboard";
+import assignments, { Assignments } from "./pages/students/Assignments";
+import MyCourses from "./pages/students/MyCourses";
+import PerformanceAnalytics from "./pages/students/PerformanceAnalytics";
+import Scheduling from "./pages/students/Scheduling";
+import Settings from "./pages/students/Settings";
+import UserProfile from "./pages/students/UserProfile";
+import StudentLayout from "./pages/students/StudentLayout";
 
 // Mentor Pages
 import MentorDashboard from "./pages/mentor/MentorDashboard";
@@ -93,6 +103,15 @@ const App = () => (
           <Route path="/roadmap" element={<Roadmap />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/profile" element={<ProfilePage />} />
+  <Route path="/courses" element={<MyCourses currentLesson={undefined} preferences={undefined} />} />
+  <Route path="/assignments" element={<Assignments />} />
+  <Route path="/analytics" element={<PerformanceAnalytics />} />
+  <Route path="/scheduling" element={<Scheduling />} />
+  <Route path="/user-profile" element={<UserProfile user={undefined} stats={undefined} />} />
+  <Route path="/settings" element={<Settings preferences={undefined} updatePreferences={undefined} />} />
+  <Route path="/roadmap" element={<Roadmap />} />
+  <Route path="/community" element={<Community />} />
+  <Route path="/profile" element={<ProfilePage />} />
 
           {/* MENTOR */}
           <Route path="/mentor/pending" element={<MentorPendingApproval />} />

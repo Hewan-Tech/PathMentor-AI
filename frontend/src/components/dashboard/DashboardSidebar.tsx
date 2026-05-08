@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom"; // Added Link import
+import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
   BookOpen,
@@ -10,6 +10,10 @@ import {
   Clock3,
   ShieldCheck,
   BarChart,
+  Map,
+  ClipboardList,
+  Calendar,
+  User
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -32,22 +36,44 @@ export const DashboardSidebar = ({
   onViewChange = () => {},
   pendingMode = false,
 }: DashboardSidebarProps) => {
-  const normalNavItems = [
+  const location = useLocation();
+
+  // MENTOR ITEMS
+  const mentorNavItems = [
     { icon: LayoutDashboard, label: "Dashboard", id: "dashboard", path: "/mentor/dashboard" },
-    { icon: BookOpen, label: "My courses", id: "courses", path: "/mentor/courses" },
+    { icon: BookOpen, label: "My Classes", id: "courses", path: "/mentor/courses" },
     { icon: BarChart, label: "Progress", id: "progress", path: "/mentor/progress" },
-    { icon: FolderKanban, label: "Projects", id: "projects", path: "/mentor/projects" },
+    { icon: FolderKanban, label: "Projects & Quizzes", id: "projects", path: "/mentor/projects" },
     { icon: Users, label: "Community", id: "community", path: "/mentor/community" },
     { icon: Settings, label: "Settings", id: "settings", path: "/mentor/settings" },
   ];
 
+  // STUDENT ITEMS 
+  const studentNavItems = [
+  { icon: LayoutDashboard, label: "Dashboard", id: "dashboard", path: "/students/dashboard" },
+  { icon: BookOpen, label: "My Courses", id: "courses", path: "/students/courses" },
+  { icon: ClipboardList, label: "Assignments", id: "assignments", path: "/students/assignments" },
+  { icon: BarChart, label: "Analytics", id: "analytics", path: "/students/analytics" },
+  { icon: Map, label: "Roadmap", id: "roadmap", path: "/students/roadmap" },
+  { icon: Calendar, label: "Schedule", id: "schedule", path: "/students/scheduling" },
+  { icon: Users, label: "Community", id: "community", path: "/students/community" },
+  { icon: User, label: "Profile", id: "profile", path: "/students/user-profile" },
+  { icon: Settings, label: "Settings", id: "settings", path: "/students/settings" },
+];
+
+  // PENDING MENTOR ITEMS
   const pendingNavItems = [
     { icon: ShieldCheck, label: "Application", id: "application", path: "/mentor/pending" },
     { icon: Clock3, label: "Status", id: "status", path: "/mentor/pending" },
     { icon: Settings, label: "Settings", id: "settings", path: "/mentor/settings" },
   ];
 
-  const navItems = pendingMode ? pendingNavItems : normalNavItems;
+  const isMentorPath = location.pathname.startsWith("/mentor");
+  
+  let navItems = isMentorPath ? mentorNavItems : studentNavItems;
+  if (isMentorPath && pendingMode) {
+    navItems = pendingNavItems;
+  }
 
   return (
     <>
@@ -80,17 +106,11 @@ export const DashboardSidebar = ({
             <ChevronLeft className={cn("w-4 h-4 transition-transform", isCollapsed && "rotate-180")} />
           </button>
 
-          {!isCollapsed && (
-            <div className="mb-6 px-3">
-              <h2 className="font-extrabold text-lg tracking-tight">
-                PathMentor <span className="text-primary">{pendingMode ? "Pending" : "AI"}</span>
-              </h2>
-            </div>
-          )}
-
-          <nav className="flex-1 space-y-2">
+          <nav className="flex-1 space-y-1 overflow-y-auto no-scrollbar">
             {navItems.map((item) => {
-              const isActive = activeView === item.id;
+              // IMPROVED: isActive logic checks if current path matches item path
+              const isActive = location.pathname === item.path;
+              
               return (
                 <Link
                   key={item.id}
@@ -100,12 +120,21 @@ export const DashboardSidebar = ({
                     if (window.innerWidth < 1024) onClose();
                   }}
                   className={cn(
-                    "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 relative group",
-                    isActive ? "bg-primary/20 text-primary" : "text-muted-foreground hover:bg-white/5 hover:text-white"
+                    "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 relative group mb-1",
+                    isActive 
+                      ? "bg-primary/15 text-primary shadow-[0_0_15px_rgba(var(--primary),0.1)]" 
+                      : "text-muted-foreground hover:bg-white/5 hover:text-white"
                   )}
                 >
-                  <item.icon size={20} />
-                  {!isCollapsed && <span className="text-sm font-medium">{item.label}</span>}
+                  <item.icon size={20} className={cn(isActive && "drop-shadow-[0_0_8px_rgba(var(--primary),0.5)]")} />
+                  {!isCollapsed && <span className="text-sm font-bold uppercase tracking-wider">{item.label}</span>}
+                  
+                  {isActive && (
+                    <motion.div 
+                      layoutId="sidebarActive"
+                      className="absolute left-0 w-1 h-6 bg-primary rounded-r-full shadow-[0_0_10px_rgba(var(--primary),1)]" 
+                    />
+                  )}
                 </Link>
               );
             })}
@@ -115,3 +144,5 @@ export const DashboardSidebar = ({
     </>
   );
 };
+
+export default DashboardSidebar;
