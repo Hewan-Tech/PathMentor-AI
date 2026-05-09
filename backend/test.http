@@ -1,5 +1,5 @@
 ###
-POST http://localhost:5000/api/auth/register
+POST http://localhost:4001/api/auth/register
 Content-Type: application/json
 
 {
@@ -9,7 +9,7 @@ Content-Type: application/json
   "role": "admin"
 }
 ###Login
-POST http://localhost:5000/api/auth/login
+POST http://localhost:4001/api/auth/login
 Content-Type: application/json 
 
 {
@@ -18,13 +18,13 @@ Content-Type: application/json
 }
 
 ### Get Profile (Protected)
-GET http://localhost:5000/api/users/profile
+GET http://localhost:4001/api/users/profile
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5OTQxNTEyNWU2MDAxN2MxYTVlMjQzNyIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc3MTMxMzU2MywiZXhwIjoxNzcxOTE4MzYzfQ.SpHDoahk0z9wPtpbCgrCm5oxRWCeEezGY5Nwpvh9aEk
 ###Get
-GET http://localhost:5000/api/users/profile
+GET http://localhost:4001/api/users/profile
 
 ###Put
-PUT http://localhost:5000/api/users/change-password
+PUT http://localhost:4001/api/users/change-password
 Content-Type: application/json
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5OGM0ZTg2MGUwY2U3NzIxYTNiNTdhNiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc3MDgwMjg2NSwiZXhwIjoxNzcxNDA3NjY1fQ.1nCJGj8RuFzGYCvBLJeTNh2arN7Y7n94IFzZai1-5-0
 
@@ -34,8 +34,8 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5OGM0ZTg2M
 }
 
 ###Get
-GET http://localhost:5000/api/admin/dashboard
+GET http://localhost:4001/api/admin/dashboard
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5OTQxNTEyNWU2MDAxN2MxYTVlMjQzNyIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc3MTkyMjkwOCwiZXhwIjoxNzcyNTI3NzA4fQ.qalymmwILqo1D2PvT4kSfd-JChXakiQhLWZK27Tfq34
 ###GET
-GET http://localhost:5000/api/admin/pending-mentors
+GET http://localhost:4001/api/admin/pending-mentors
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5OTQxNTEyNWU2MDAxN2MxYTVlMjQzNyIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc3MTkyMzM4NCwiZXhwIjoxNzcyNTI4MTg0fQ.NKxZRCa0C1wL16upu5MjS5yu4EYTQ8ZWb--FtKoDdlU
