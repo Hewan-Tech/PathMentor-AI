@@ -281,7 +281,8 @@ const getCourseProgress = asyncHandler(async (req, res) => {
     totalLessons,
     completedLessons: completedLessonsCount,
     progressPercentage,
-    xpEarned
+    xpEarned,
+    levelsProgress: progress ? progress.levelsProgress : []
   });
 
 });

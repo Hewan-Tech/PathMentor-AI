@@ -36,7 +36,12 @@ const userSchema=new mongoose.Schema(
             personalGoal: String,
             persona: String,
             strengths: [String],
-            recommendation: String
+            recommendation: String,
+            course: {
+              id: { type: mongoose.Schema.Types.ObjectId, ref: "Course" },
+              title: String
+            },
+            courseLevel: String
       },
      onboardingCompleted: {
              type: Boolean,

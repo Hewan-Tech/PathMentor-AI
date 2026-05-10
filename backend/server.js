@@ -13,6 +13,11 @@ const quizRoutes = require("./routes/quizRoutes");
 const progressRoutes = require("./routes/progressRoutes");
 const leaderboardRoutes = require("./routes/leaderboardRoutes");
 const announcementRoutes = require("./routes/announcementRoutes");
+const sessionRoutes = require("./routes/sessionRoutes");
+const messageRoutes = require("./routes/messageRoutes");
+const matchRoutes = require("./routes/matchRoutes");
+const aiRoutes = require("./routes/aiRoutes");
+const achievementRoutes = require("./routes/achievementRoutes");
 
 dotenv.config(); 
 console.log("MONGO_URI:", process.env.MONGO_URI);
@@ -36,6 +41,11 @@ app.use("/api/quizzes", quizRoutes);
 app.use("/api/progress", progressRoutes);
 app.use("/api/leaderboard", leaderboardRoutes);
 app.use("/api/announcements", announcementRoutes);
+app.use("/api/sessions", sessionRoutes);
+app.use("/api/messages", messageRoutes);
+app.use("/api/matches", matchRoutes);
+app.use("/api/ai", aiRoutes);
+app.use("/api/achievements", achievementRoutes);
 
 app.use(errorHandler);
 app.listen(PORT, ()=>{

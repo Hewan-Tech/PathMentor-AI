@@ -28,4 +28,21 @@ const getQuizByLesson = asyncHandler(async (req, res) => {
 
 });
 
-module.exports = {createQuiz, getQuizByLesson }
+const adminGetQuizzes = asyncHandler(async (req, res) => {
+  const { lessonId, page = 1, limit = 10 } = req.query;
+  const query = lessonId ? { lesson: lessonId } : {};
+  const total = await Quiz.countDocuments(query);
+  const quizzes = await Quiz.find(query)
+    .populate("lesson", "title")
+    .sort({ createdAt: -1 })
+    .skip((page - 1) * limit)
+    .limit(Number(limit));
+  res.json({ success: true, total, data: quizzes });
+});
+
+const adminDeleteQuiz = asyncHandler(async (req, res) => {
+  await Quiz.findByIdAndDelete(req.params.id);
+  res.json({ success: true, message: "Quiz deleted" });
+});
+
+module.exports = { createQuiz, getQuizByLesson, adminGetQuizzes, adminDeleteQuiz };

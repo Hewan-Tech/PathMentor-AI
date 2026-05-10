@@ -44,4 +44,29 @@ const getLessonsByLevel = asyncHandler(async (req, res) => {
 
 });
 
-module.exports = {createLesson, getLessonsByLevel}
+const adminGetLessons = asyncHandler(async (req, res) => {
+  const { courseId, levelId, page = 1, limit = 10 } = req.query;
+  const query = {};
+  if (courseId) query.course = courseId;
+  if (levelId) query.level = levelId;
+  const total = await Lesson.countDocuments(query);
+  const lessons = await Lesson.find(query)
+    .populate("level", "title order")
+    .populate("createdBy", "name email")
+    .sort({ order: 1 })
+    .skip((page - 1) * limit)
+    .limit(Number(limit));
+  res.json({ success: true, total, data: lessons });
+});
+
+const adminDeleteLesson = asyncHandler(async (req, res) => {
+  await Lesson.findByIdAndDelete(req.params.id);
+  res.json({ success: true, message: "Lesson deleted" });
+});
+
+const adminUpdateLesson = asyncHandler(async (req, res) => {
+  const lesson = await Lesson.findByIdAndUpdate(req.params.id, req.body, { new: true });
+  res.json({ success: true, data: lesson });
+});
+
+module.exports = { createLesson, getLessonsByLevel, adminGetLessons, adminDeleteLesson, adminUpdateLesson };

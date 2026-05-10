@@ -9,14 +9,18 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Register from "./pages/Register";
 import Roadmap from "./pages/Roadmap";
-import Dashboard from "./pages/students/Dashboard";
 import ProfilePage from "./pages/ProfilePage";
 import NotFound from "./pages/NotFound";
+import Dashboard from "./pages/students/Dashboard";
 
 //Students page
-import dashboard from "./pages/students/Dashboard";
-import assignments, { Assignments } from "./pages/students/Assignments";
+import StudentDashboard from "./pages/students/Dashboard";
+import Assigments from "./pages/students/Assignments";
 import MyCourses from "./pages/students/MyCourses";
+import CourseOverview from "./pages/students/CourseOverview";
+import LessonViewer from "./pages/students/LessonViewer";
+import QuizPage from "./pages/students/QuizPage";
+import KeyConceptsPage from "./pages/students/KeyConceptsPage";
 import PerformanceAnalytics from "./pages/students/PerformanceAnalytics";
 import Scheduling from "./pages/students/Scheduling";
 import Settings from "./pages/students/Settings";
@@ -83,6 +87,7 @@ import Ratings from "./pages/admin/feedback/Ratings";
 import AdminTeam from "./pages/admin/settings/AdminTeam";
 import SystemSettings from "./pages/admin/settings/SystemSettings";
 import ProfileSettings from "./pages/admin/settings/ProfileSettings";
+import Assignments from "./pages/students/Assignments";
 
 const queryClient = new QueryClient();
 
@@ -103,15 +108,21 @@ const App = () => (
         <Route path="/roadmap" element={<Roadmap />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/students/courses" element={<StudentLayout><MyCourses currentLesson={undefined} preferences={undefined} /></StudentLayout>} />
-        <Route path="/students/assignments" element={<StudentLayout><Assignments /></StudentLayout>} />
+
+          {/* My Courses + sub-pages */}
+          <Route path="/students/courses" element={<StudentLayout><MyCourses /></StudentLayout>} />
+          <Route path="/students/courses/overview" element={<StudentLayout><CourseOverview /></StudentLayout>} />
+          <Route path="/students/courses/concepts" element={<StudentLayout><KeyConceptsPage /></StudentLayout>} />
+          <Route path="/students/courses/lesson/:lessonId" element={<StudentLayout><LessonViewer /></StudentLayout>} />
+          <Route path="/students/courses/quiz/:lessonId" element={<StudentLayout><QuizPage /></StudentLayout>} />
+
+        <Route path="/students/assignments" element={<StudentLayout><Assigments /></StudentLayout>} />
         <Route path="/students/analytics" element={<StudentLayout><PerformanceAnalytics /></StudentLayout>} />
         <Route path="/students/scheduling" element={<StudentLayout><Scheduling /></StudentLayout>} />
-          <Route path="/students/user-profile" element={<StudentLayout><UserProfile user={undefined} stats={undefined} /></StudentLayout>} />
-          <Route path="/settings" element={<StudentLayout><Settings preferences={undefined} updatePreferences={undefined} /></StudentLayout>} />
+          <Route path="/students/user-profile" element={<StudentLayout><UserProfile /></StudentLayout>} />
+          <Route path="/settings" element={<StudentLayout><Settings /></StudentLayout>} />
         <Route path="/students/roadmap" element={<StudentLayout><Roadmap /></StudentLayout>} />
         <Route path="/community" element={<Community />} />
-        <Route path="/profile" element={<ProfilePage />} />
 
           {/* MENTOR */}
           <Route path="/mentor/pending" element={<MentorPendingApproval />} />

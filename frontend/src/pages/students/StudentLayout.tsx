@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
+import { useProfile } from "@/hooks/useStudentApi";
 import { motion, AnimatePresence } from "framer-motion";
 
 import {
@@ -19,9 +20,15 @@ import {
 
 const StudentLayout = ({children}) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useProfile();
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/auth");
+  };
 
   const menuItems = [
     {
@@ -124,13 +131,10 @@ const StudentLayout = ({children}) => {
 
         {/* LOGOUT */}
         <div className="p-4 border-t border-white/10">
-          <button className="w-full flex items-center gap-4 px-4 py-3 rounded-2xl text-red-400 hover:bg-red-500/10 transition-all">
+          <button onClick={handleLogout} className="w-full flex items-center gap-4 px-4 py-3 rounded-2xl text-red-400 hover:bg-red-500/10 transition-all">
             <LogOut size={22} />
-
             {isSidebarOpen && (
-              <span className="text-sm font-bold uppercase tracking-wider">
-                Logout
-              </span>
+              <span className="text-sm font-bold uppercase tracking-wider">Logout</span>
             )}
           </button>
         </div>
@@ -187,11 +191,10 @@ const StudentLayout = ({children}) => {
             >
               <div className="hidden sm:block text-right">
                 <p className="text-xs font-bold uppercase">
-                  Student_01
+                  {user?.name || "Student"}
                 </p>
-
                 <p className="text-[10px] text-cyan-400">
-                  Level 14
+                  {user?.learningProfile?.experienceLevel || "Learner"}
                 </p>
               </div>
 
