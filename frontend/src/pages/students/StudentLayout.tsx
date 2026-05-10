@@ -17,7 +17,7 @@ import {
   Search,
 } from "lucide-react";
 
-const StudentLayout = () => {
+const StudentLayout = ({children}) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const navigate = useNavigate();
@@ -27,7 +27,7 @@ const StudentLayout = () => {
     {
       label: "Dashboard",
       icon: LayoutDashboard,
-      path: "/students/dashboard",
+      path: "/dashboard",
     },
     {
       label: "My Courses",
@@ -212,7 +212,8 @@ const StudentLayout = () => {
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2 }}
             >
-              <Outlet />
+              {children}
+              {/* <Outlet /> */}
             </motion.div>
           </AnimatePresence>
         </main>

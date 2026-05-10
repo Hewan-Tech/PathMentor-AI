@@ -100,18 +100,18 @@ const App = () => (
           <Route path="/register" element={<Register />} />
 
           {/* STUDENT */}
-          <Route path="/roadmap" element={<Roadmap />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/profile" element={<ProfilePage />} />
-  <Route path="/courses" element={<MyCourses currentLesson={undefined} preferences={undefined} />} />
-  <Route path="/assignments" element={<Assignments />} />
-  <Route path="/analytics" element={<PerformanceAnalytics />} />
-  <Route path="/scheduling" element={<Scheduling />} />
-  <Route path="/user-profile" element={<UserProfile user={undefined} stats={undefined} />} />
-  <Route path="/settings" element={<Settings preferences={undefined} updatePreferences={undefined} />} />
-  <Route path="/roadmap" element={<Roadmap />} />
-  <Route path="/community" element={<Community />} />
-  <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/roadmap" element={<Roadmap />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/students/courses" element={<StudentLayout><MyCourses currentLesson={undefined} preferences={undefined} /></StudentLayout>} />
+        <Route path="/students/assignments" element={<StudentLayout><Assignments /></StudentLayout>} />
+        <Route path="/students/analytics" element={<StudentLayout><PerformanceAnalytics /></StudentLayout>} />
+        <Route path="/students/scheduling" element={<StudentLayout><Scheduling /></StudentLayout>} />
+          <Route path="/students/user-profile" element={<StudentLayout><UserProfile user={undefined} stats={undefined} /></StudentLayout>} />
+          <Route path="/settings" element={<StudentLayout><Settings preferences={undefined} updatePreferences={undefined} /></StudentLayout>} />
+        <Route path="/students/roadmap" element={<StudentLayout><Roadmap /></StudentLayout>} />
+        <Route path="/community" element={<Community />} />
+        <Route path="/profile" element={<ProfilePage />} />
 
           {/* MENTOR */}
           <Route path="/mentor/pending" element={<MentorPendingApproval />} />
